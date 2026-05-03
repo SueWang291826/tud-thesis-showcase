@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline — TUD-Station</title>
+  <meta name="description" content="Six-step end-to-end data pipeline: from IFC BIM loading to evaluation. 96.5 s total runtime.">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<button id="nav-toggle" aria-label="Toggle navigation"></button>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">TUD-Station</div>
+    <div class="logo-sub">MSc Thesis · BIM × LLM × Navigation</div>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a href="index.html"><span class="nav-icon">🏠</span>Home</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">System</div>
+      <a href="pipeline.html"><span class="nav-icon">⚙️</span>Pipeline (6 Steps)</a>
+      <a href="navgraph.html"><span class="nav-icon">🗺️</span>Navigation Graph</a>
+      <a href="simulation.html"><span class="nav-icon">🚶</span>ABM Simulation</a>
+      <a href="agent.html"><span class="nav-icon">🤖</span>LLM Agent</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Outcomes</div>
+      <a href="results.html"><span class="nav-icon">📊</span>Results &amp; Evaluation</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">On This Page</div>
+      <a href="#overview"><span class="nav-icon">·</span>Overview</a>
+      <a href="#step0"><span class="nav-icon">·</span>Step 0 — Data Load</a>
+      <a href="#step1"><span class="nav-icon">·</span>Step 1 — Geometry</a>
+      <a href="#step2"><span class="nav-icon">·</span>Step 2 — Sampling</a>
+      <a href="#step3"><span class="nav-icon">·</span>Step 3 — Graph</a>
+      <a href="#step4"><span class="nav-icon">·</span>Step 4 — Routing</a>
+      <a href="#step5"><span class="nav-icon">·</span>Step 5 — Simulation</a>
+      <a href="#step6"><span class="nav-icon">·</span>Step 6 — Evaluation</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">TU Delft · MSc Architecture · 2025</div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <div class="page-header">
+    <div class="breadcrumb"><a href="index.html">TUD-Station</a> / Pipeline</div>
+    <h1>⚙️ Six-Step End-to-End Pipeline</h1>
+    <p class="subtitle">
+      A fully automated data pipeline transforms raw IFC BIM files into a queryable navigation graph,
+      ABM simulation outputs, and evaluation reports — with a total runtime of <strong>96.5 seconds</strong>.
+    </p>
+    <div class="tag-row" style="margin-top:14px;">
+      <span class="tag tag-blue">run_pipeline.py</span>
+      <span class="tag tag-green">96.5 s total</span>
+      <span class="tag tag-orange">18,648 nodes</span>
+      <span class="tag tag-purple">68,148 edges</span>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section id="overview">
+    <h2><span class="section-num">00</span> Pipeline Overview</h2>
+    <p class="section-desc">Entry point: <code>python run_pipeline.py</code> — all six steps run sequentially.</p>
+
+    <div class="card-grid card-grid-3 reveal">
+      <div class="stat-card accent">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value count-up" data-target="4">0</div>
+        <div class="stat-label">Input CSV Tables</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">🔢</div>
+        <div class="stat-value count-up" data-target="18648">0</div>
+        <div class="stat-label">Graph Nodes</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-value count-up" data-target="96.5" data-suffix="s">0s</div>
+        <div class="stat-label">Total Runtime</div>
+      </div>
+    </div>
+
+    <div class="callout callout-blue reveal" style="margin-top:20px;">
+      <strong>Pipeline Flow</strong>
+      Step 0 → Step 1 → Step 2 → Step 3 → Step 4 → Step 5 → Step 6. Each step receives
+      the outputs of its predecessor(s) as typed Python objects — no intermediate files.
+      A <em>WorldModelCache</em> in the Tool Layer lazily holds the graph, config, and
+      semantic regions for agent queries.
+    </div>
+
+    <div class="card reveal" style="margin-top:20px;">
+      <pre>
+# Simplified pipeline entry (run_pipeline.py)
+products   = step0_load_products(cfg)           # CSV tables
+geometries, connectors, ctrl = step1_geometry(cfg, products)
+nodes      = step2_sampling(cfg, geometries)
+graph      = step3_build_graph(cfg, nodes, connectors, geometries)
+routing    = step4_routing(cfg, graph, ctrl)
+sim_result = step5_simulate(cfg, graph, routing)
+report     = step6_evaluate(cfg, sim_result, routing)
+      </pre>
+    </div>
+  </section>
+
+  <!-- STEP 0 -->
+  <section id="step0">
+    <h2><span class="section-num">STEP 0</span> Load Pre-processed Products</h2>
+    <p class="section-desc">Loads four CSV tables exported from the <code>data-preprocessing</code> module.</p>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-header">
+          <span class="tl-step">STEP 0</span>
+          <span class="tl-title">load_products</span>
+          <span class="tl-time">~2.1 s</span>
+        </div>
+        <div class="tl-body">
+          <p>Reads the four validated CSV files produced by <code>data-preprocessing/</code>:</p>
+          <div class="tag-row" style="margin-top:10px;">
+            <span class="tag tag-gray">retained_elements.csv</span>
+            <span class="tag tag-gray">barrier_elements.csv</span>
+            <span class="tag tag-gray">connectors_validated.csv</span>
+            <span class="tag tag-gray">obstacles_recalibrated.csv</span>
+          </div>
+          <p style="margin-top:10px;">Each table is validated for required columns, then packaged into a <code>products</code> dict passed downstream.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 1 -->
+  <section id="step1">
+    <h2><span class="section-num">STEP 1</span> IFC Geometry Extraction</h2>
+    <p class="section-desc">Parses three IFC files; returns walkable polygons, obstacles, connectors, and control points.</p>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-header">
+          <span class="tl-step">STEP 1</span>
+          <span class="tl-title">geometry — IFC → world geometry</span>
+          <span class="tl-time">~18.4 s</span>
+        </div>
+        <div class="tl-body">
+          <p>Uses <strong>ifcopenshell</strong> to load three IFC files and extract spatial elements:</p>
+          <ul style="margin:8px 0 0 18px; font-size:13.5px; line-height:1.8;">
+            <li><code>IfcSlab</code> → floor polygon (Shapely convex hull)</li>
+            <li><code>IfcBuildingElement</code> → obstacle AABB rectangles</li>
+            <li><code>IfcDoor</code> → Platform Screen Doors (dynamic)</li>
+            <li>CSV connector table → staircase/escalator/lift endpoints (exact)</li>
+          </ul>
+          <br>
+          <p><strong>Return type</strong> (3-tuple):</p>
+          <pre style="margin-top:8px;">
+def extract_all_levels(cfg, products) -> tuple[
+    dict,  # geometries: {level: {floor_polygon, obstacles, …}}
+    list,  # all_connectors: [{type, level_from, level_to, pt_from, pt_to, …}]
+    dict,  # control_points: {level: [entrance/exit points]}
+]</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/all_levels_geometry.png" alt="All levels geometry" loading="lazy">
+        <div class="img-caption">Extracted floor polygons and obstacle boundaries — all four levels</div>
+      </div>
+      <div class="img-card">
+        <img src="img/connectors_on_floors.png" alt="Connectors on floors" loading="lazy">
+        <div class="img-caption">Staircase, escalator, and lift connector endpoints overlaid on geometry</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section id="step2">
+    <h2><span class="section-num">STEP 2</span> Node Sampling</h2>
+    <p class="section-desc">Populates each walkable floor polygon with a uniform 0.5 m grid of navigation nodes.</p>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-header">
+          <span class="tl-step">STEP 2</span>
+          <span class="tl-title">sampling — grid → valid node list</span>
+          <span class="tl-time">~14.7 s</span>
+        </div>
+        <div class="tl-body">
+          <p>Sampling pipeline for each floor level:</p>
+          <ol style="margin:8px 0 0 18px; font-size:13.5px; line-height:1.9;">
+            <li>Generate uniform 0.5 m grid within floor polygon</li>
+            <li>Filter: remove nodes within <em>safety clearance</em> of any obstacle (Shapely <code>buffer + intersects</code>)</li>
+            <li>Apply YAML <code>forbidden_zones</code> (maintenance shafts, track areas, service rooms)</li>
+            <li>Snap connector endpoints to nearest grid node (ensures cross-level connectivity)</li>
+            <li>Inject semantic control points (ticket gates, station entrances/exits)</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/all_levels_nodes.png" alt="Node sampling all levels" loading="lazy">
+        <div class="img-caption">Valid nodes after obstacle filtering — 0.5 m grid across all floors</div>
+      </div>
+      <div class="img-card">
+        <img src="img/node_density_per_level.png" alt="Node density per level" loading="lazy">
+        <div class="img-caption">Node density distribution by floor level</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section id="step3">
+    <h2><span class="section-num">STEP 3</span> Navigation Graph Construction</h2>
+    <p class="section-desc">Builds the 2.5D NetworkX graph connecting all in-floor nodes plus cross-floor connector edges.</p>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-header">
+          <span class="tl-step">STEP 3</span>
+          <span class="tl-title">graph — nodes + connectors → NavGraph</span>
+          <span class="tl-time">~31.2 s</span>
+        </div>
+        <div class="tl-body">
+          <p>Graph construction in two phases:</p>
+          <p><strong>Phase A — In-floor edges:</strong> for each node, connect all neighbours within
+          <code>graph.connection_radius_m</code> (default 0.8 m) provided the line of sight is
+          obstacle-free (Shapely <code>intersects</code> check).</p>
+          <p style="margin-top:8px;"><strong>Phase B — Cross-level edges:</strong> for each validated
+          connector (staircase / escalator / lift), add bidirectional edges from the nearest
+          node on each floor, weighted by <em>realistic traversal time</em> (ascent/descent speed
+          coefficients from <code>experiment_config.yaml</code>).</p>
+          <br>
+          <div class="tag-row">
+            <span class="tag tag-blue">18,648 nodes</span>
+            <span class="tag tag-blue">68,148 edges</span>
+            <span class="tag tag-green">4 levels</span>
+            <span class="tag tag-orange">NetworkX DiGraph</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-3 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/graph_per_level.png" alt="Graph per level" loading="lazy">
+        <div class="img-caption">In-floor graph edges per level</div>
+      </div>
+      <div class="img-card">
+        <img src="img/graph_cross_level_edges.png" alt="Cross-level edges" loading="lazy">
+        <div class="img-caption">Cross-level connector edges (stairs/escalators/lifts)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/graph_degree_distribution.png" alt="Degree distribution" loading="lazy">
+        <div class="img-caption">Node degree distribution across the full graph</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section id="step4">
+    <h2><span class="section-num">STEP 4</span> Routing &amp; OD Assignment</h2>
+    <p class="section-desc">Defines semantic regions, builds an OD demand matrix, and pre-computes representative routes.</p>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-header">
+          <span class="tl-step">STEP 4</span>
+          <span class="tl-title">routing — OD matrix + path pre-computation</span>
+          <span class="tl-time">~19.8 s</span>
+        </div>
+        <div class="tl-body">
+          <p><strong>Semantic regions</strong> are loaded from <code>experiment_config.yaml</code>:
+          platform zones, ticketing areas, exit clusters, and service corridors. Each agent is
+          assigned a home region (origin) and a destination region drawn from the OD demand matrix.</p>
+          <p style="margin-top:8px;"><strong>Dijkstra</strong> is used for route pre-computation.
+          The edge weight is <em>travel time in seconds</em> (distance ÷ speed, connector type
+          adjustments applied). Routes are stored as node-ID lists for fast ABM replay.</p>
+          <br>
+          <div class="tag-row">
+            <span class="tag tag-green">Dijkstra routing</span>
+            <span class="tag tag-green">OD demand matrix</span>
+            <span class="tag tag-orange">Semantic zones</span>
+            <span class="tag tag-blue">Route pre-caching</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/semantic_regions_map.png" alt="Semantic regions" loading="lazy">
+        <div class="img-caption">Semantic regions: platform, concourse, exits, and ticketing zones</div>
+      </div>
+      <div class="img-card">
+        <img src="img/example_paths.png" alt="Example paths" loading="lazy">
+        <div class="img-caption">Sample Dijkstra paths from platform to exit — multi-floor traversal</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section id="step5">
+    <h2><span class="section-num">STEP 5</span> ABM Simulation</h2>
+    <p class="section-desc">200 Mesa agents execute in three scenarios; congestion and travel-time data are collected each tick.</p>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-header">
+          <span class="tl-step">STEP 5</span>
+          <span class="tl-title">simulate — ABM 3 scenarios</span>
+          <span class="tl-time">~8.3 s</span>
+        </div>
+        <div class="tl-body">
+          <p>Three scenarios are run using the same agent population but different environmental configurations:</p>
+          <ul style="margin:8px 0 0 18px; font-size:13.5px; line-height:1.8;">
+            <li><strong>Scenario A — Static:</strong> no dynamic events; baseline flow measurement</li>
+            <li><strong>Scenario B — Dynamic:</strong> train arrival triggers Platform Screen Door
+                opening/closing; agents re-plan after a congestion spike</li>
+            <li><strong>Scenario C — Wheelchair:</strong> lifts-only constraint; measures
+                accessibility delay vs. baseline</li>
+          </ul>
+          <br>
+          <p>At each tick, agents broadcast their current node; congestion weight is computed
+          as <em>local agent count ÷ node capacity</em> and fed back into the edge-weight
+          function for dynamic re-routing.</p>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:var(--muted); margin-top:4px;">See the <a href="simulation.html">Simulation page</a> for interactive visualisations of all three scenarios.</p>
+  </section>
+
+  <!-- STEP 6 -->
+  <section id="step6">
+    <h2><span class="section-num">STEP 6</span> Evaluation &amp; Output</h2>
+    <p class="section-desc">Computes metrics, generates GeoJSON exports, figures, and a JSON report.</p>
+
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-header">
+          <span class="tl-step">STEP 6</span>
+          <span class="tl-title">evaluate — metrics + outputs</span>
+          <span class="tl-time">~2.0 s</span>
+        </div>
+        <div class="tl-body">
+          <p>Key metrics computed:</p>
+          <div class="table-wrap" style="margin-top:8px;">
+            <table>
+              <thead><tr><th>Metric</th><th>Scenario A</th><th>Scenario B</th><th>Scenario C</th></tr></thead>
+              <tbody>
+                <tr><td>Arrival rate</td><td>98.5%</td><td>97.2%</td><td>94.3%</td></tr>
+                <tr><td>Avg travel time</td><td>160.2 s</td><td>178.4 s</td><td>224.7 s</td></tr>
+                <tr><td>Peak congestion</td><td>0.41</td><td>0.78</td><td>0.39</td></tr>
+                <tr><td>Re-plan events</td><td>0</td><td>312</td><td>18</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:10px;">Output artefacts: GeoJSON pedestrian trajectories, congestion heatmap PNGs,
+          travel-time distribution CSVs, and an evaluation JSON summary (<code>evaluation_report.json</code>).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-green reveal" style="margin-top:20px;">
+      <strong>Full results breakdown →</strong>
+      View the <a href="results.html">Results &amp; Evaluation page</a> for interactive charts,
+      scenario comparison tables, and the full image gallery.
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/js/nav.js"></script>
+</body>
+</html>

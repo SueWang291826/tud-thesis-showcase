@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Agent — TUD-Station</title>
+  <meta name="description" content="DeepSeek function-calling agent with typed Tool SDK, ChromaDB RAG, FAISS node index, and Regex fallback — all for natural-language subway navigation queries.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+    .tool-card .tc-name {
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .tool-card .tc-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .tool-card .tc-params {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .qa-pair {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .qa-q {
+      background: var(--accent-l);
+      padding: 10px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--accent-h);
+      border-bottom: 1px solid var(--border);
+    }
+    .qa-q::before { content: '💬 '; }
+    .qa-a {
+      background: var(--surface);
+      padding: 10px 16px;
+      font-size: 13.5px;
+      color: var(--text);
+    }
+    .qa-tool {
+      background: var(--green-l);
+      padding: 5px 16px;
+      font-size: 12px;
+      color: var(--green);
+      font-family: var(--font-mono);
+      border-top: 1px solid var(--border);
+    }
+    .qa-tool::before { content: '→ tool: '; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<button id="nav-toggle" aria-label="Toggle navigation"></button>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">TUD-Station</div>
+    <div class="logo-sub">MSc Thesis · BIM × LLM × Navigation</div>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a href="index.html"><span class="nav-icon">🏠</span>Home</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">System</div>
+      <a href="pipeline.html"><span class="nav-icon">⚙️</span>Pipeline (6 Steps)</a>
+      <a href="navgraph.html"><span class="nav-icon">🗺️</span>Navigation Graph</a>
+      <a href="simulation.html"><span class="nav-icon">🚶</span>ABM Simulation</a>
+      <a href="agent.html"><span class="nav-icon">🤖</span>LLM Agent</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Outcomes</div>
+      <a href="results.html"><span class="nav-icon">📊</span>Results &amp; Evaluation</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">On This Page</div>
+      <a href="#overview"><span class="nav-icon">·</span>Agent Architecture</a>
+      <a href="#tool-sdk"><span class="nav-icon">·</span>Tool SDK</a>
+      <a href="#intent"><span class="nav-icon">·</span>Intent Recognition</a>
+      <a href="#rag"><span class="nav-icon">·</span>RAG Knowledge Base</a>
+      <a href="#faiss"><span class="nav-icon">·</span>FAISS Node Index</a>
+      <a href="#lora"><span class="nav-icon">·</span>LoRA Fine-tuning</a>
+      <a href="#examples"><span class="nav-icon">·</span>Q&amp;A Examples</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">TU Delft · MSc Architecture · 2025</div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <div class="page-header">
+    <div class="breadcrumb"><a href="index.html">TUD-Station</a> / LLM Agent</div>
+    <h1>🤖 LLM Navigation Agent</h1>
+    <p class="subtitle">
+      A DeepSeek-powered conversational agent that answers natural-language navigation queries
+      by calling a typed Tool SDK backed by the live navigation graph, ABM simulation, and
+      dual-vector RAG retrieval — with Regex fallback for API unavailability.
+    </p>
+    <div class="tag-row" style="margin-top:14px;">
+      <span class="tag tag-purple">DeepSeek Function Calling</span>
+      <span class="tag tag-green">ChromaDB RAG</span>
+      <span class="tag tag-blue">FAISS Node Index</span>
+      <span class="tag tag-orange">Regex Fallback</span>
+      <span class="tag tag-teal">Bilingual EN/CN</span>
+    </div>
+  </div>
+
+  <!-- AGENT ARCHITECTURE -->
+  <section id="overview">
+    <h2><span class="section-num">01</span> Three-Layer Agent Architecture</h2>
+    <p class="section-desc">The agent sits at Layer 3, calling Layer 2 tools that query the Layer 1 world model.</p>
+
+    <div style="display:flex; flex-direction:column; gap:6px; max-width:760px; margin-bottom:20px;" class="reveal">
+      <!-- Layer 3 -->
+      <div style="background:var(--purple-l); border:2px solid var(--purple); border-radius:var(--radius-sm); padding:16px 20px;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--purple); margin-bottom:6px;">Layer 3 · Intelligence — agent_orchestrator.py</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+          <div style="background:rgba(255,255,255,.6); border-radius:6px; padding:10px 14px;">
+            <strong>DeepSeek Function Calling</strong><br>
+            <span style="color:var(--muted); font-size:12px;">JSON schema tool dispatch, multi-turn context, structured parameter extraction</span>
+          </div>
+          <div style="background:rgba(255,255,255,.6); border-radius:6px; padding:10px 14px;">
+            <strong>Regex Fallback Classifier</strong><br>
+            <span style="color:var(--muted); font-size:12px;">9 rules, bilingual patterns (EN/CN), zero-loss degradation when API unavailable</span>
+          </div>
+          <div style="background:rgba(255,255,255,.6); border-radius:6px; padding:10px 14px;">
+            <strong>ChromaDB RAG Retriever</strong><br>
+            <span style="color:var(--muted); font-size:12px;">Station knowledge base, FAQ, policy docs — top-3 chunk retrieval</span>
+          </div>
+          <div style="background:rgba(255,255,255,.6); border-radius:6px; padding:10px 14px;">
+            <strong>FAISS Node Vector Index</strong><br>
+            <span style="color:var(--muted); font-size:12px;">Semantic node lookup — "nearest elevator", "ticketing area" → node ID</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center; font-size:18px; color:var(--muted); padding:4px 0;">▼</div>
+
+      <!-- Layer 2 -->
+      <div style="background:var(--green-l); border:2px solid var(--green); border-radius:var(--radius-sm); padding:16px 20px;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--green); margin-bottom:6px;">Layer 2 · Tools — tool_layer.py + tool_schemas.py</div>
+        <div class="tag-row">
+          <span class="tag tag-green">query_environment</span>
+          <span class="tag tag-green">plan_route</span>
+          <span class="tag tag-green">simulate_scenario</span>
+          <span class="tag tag-green">get_congestion</span>
+          <span class="tag tag-green">find_connector</span>
+          <span class="tag tag-green">get_accessibility_path</span>
+          <span class="tag tag-green">list_semantic_regions</span>
+          <span class="tag tag-green">_WorldModelCache</span>
+        </div>
+      </div>
+
+      <div style="text-align:center; font-size:18px; color:var(--muted); padding:4px 0;">▼</div>
+
+      <!-- Layer 1 -->
+      <div style="background:var(--accent-l); border:2px solid var(--accent); border-radius:var(--radius-sm); padding:16px 20px;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--accent); margin-bottom:6px;">Layer 1 · World Model — pipeline outputs</div>
+        <div class="tag-row">
+          <span class="tag tag-blue">NetworkX NavGraph</span>
+          <span class="tag tag-blue">Simulation Results</span>
+          <span class="tag tag-blue">Semantic Regions</span>
+          <span class="tag tag-blue">Connector Table</span>
+          <span class="tag tag-blue">IFC Geometry</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOL SDK -->
+  <section id="tool-sdk">
+    <h2><span class="section-num">02</span> Tool Layer SDK</h2>
+    <p class="section-desc">Seven typed tools are registered as JSON schemas for DeepSeek function calling.</p>
+
+    <div class="reveal">
+      <div class="tool-card">
+        <div class="tc-name">query_environment(floor?, region?)</div>
+        <div class="tc-desc">Returns current agent counts, congestion levels, and region status for a given floor or semantic region. Used for "how busy is …" queries.</div>
+        <div class="tc-params">
+          <span class="tag tag-gray">floor: F1|F2|F3|F4</span>
+          <span class="tag tag-gray">region: str</span>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-name">plan_route(origin, destination, mode?)</div>
+        <div class="tc-desc">Runs Dijkstra from the nearest named node to destination; returns path node list, total time, and floor transitions. Mode <code>"accessible"</code> restricts to lifts only.</div>
+        <div class="tc-params">
+          <span class="tag tag-gray">origin: str</span>
+          <span class="tag tag-gray">destination: str</span>
+          <span class="tag tag-gray">mode: "normal"|"accessible"|"fast"</span>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-name">simulate_scenario(scenario)</div>
+        <div class="tc-desc">Triggers or retrieves results of a named simulation scenario (A/B/C). Returns arrival rate, avg travel time, and peak congestion.</div>
+        <div class="tc-params">
+          <span class="tag tag-gray">scenario: "static"|"dynamic"|"wheelchair"</span>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-name">get_congestion(area?, threshold?)</div>
+        <div class="tc-desc">Returns edges/nodes exceeding a congestion threshold. Optionally filtered to a floor or named area. Used for "which route is least congested" queries.</div>
+        <div class="tc-params">
+          <span class="tag tag-gray">area: str</span>
+          <span class="tag tag-gray">threshold: 0.0–1.0</span>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-name">find_connector(type?, floor?, accessible?)</div>
+        <div class="tc-desc">Locates the nearest connector of the given type from a reference location. Supports filtering by accessible (lifts only for wheelchair users).</div>
+        <div class="tc-params">
+          <span class="tag tag-gray">type: "stair"|"escalator"|"lift"</span>
+          <span class="tag tag-gray">floor: str</span>
+          <span class="tag tag-gray">accessible: bool</span>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-name">get_accessibility_path(origin, destination)</div>
+        <div class="tc-desc">Specialised version of <code>plan_route</code> with lift-only constraint and wheelchair speed coefficients. Returns accessible route with wait-time estimates.</div>
+        <div class="tc-params">
+          <span class="tag tag-gray">origin: str</span>
+          <span class="tag tag-gray">destination: str</span>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-name">list_semantic_regions(floor?)</div>
+        <div class="tc-desc">Returns all named semantic regions on a given floor (or all floors). Enables the agent to ground vague user terms like "exit" or "platform" to specific nodes.</div>
+        <div class="tc-params">
+          <span class="tag tag-gray">floor: str (optional)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-blue reveal" style="margin-top:16px;">
+      <strong>_WorldModelCache — Lazy Loading</strong>
+      The Tool Layer holds a singleton <code>_WorldModelCache</code> that lazily loads the
+      NavigationGraph, experiment config, and semantic regions on first call.
+      Subsequent tool calls reuse the cached objects — no re-serialisation overhead.
+    </div>
+  </section>
+
+  <!-- INTENT RECOGNITION -->
+  <section id="intent">
+    <h2><span class="section-num">03</span> Dual-Engine Intent Recognition</h2>
+    <p class="section-desc">Primary: DeepSeek Function Calling. Fallback: 9 compiled Regex rules for zero-loss offline operation.</p>
+
+    <div class="card-grid card-grid-2 reveal">
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:8px;">🧠 DeepSeek Function Calling</h3>
+        <ul style="font-size:13px; color:var(--muted); line-height:1.8; margin-left:16px;">
+          <li>Full JSON schema registered for all 7 tools</li>
+          <li>Structured parameter extraction from free text</li>
+          <li>Multi-turn conversation context (last 4 turns)</li>
+          <li>Handles ambiguous phrasings, mixed EN/CN input</li>
+          <li>Returns structured tool call + human response</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:8px;">🔤 Regex Fallback Classifier</h3>
+        <ul style="font-size:13px; color:var(--muted); line-height:1.8; margin-left:16px;">
+          <li>9 compiled regex rules (bilingual EN + CN)</li>
+          <li>Covers: route, congestion, accessibility, environment, scenario, connector</li>
+          <li>Zero additional latency — pure in-process matching</li>
+          <li>Graceful degradation: no API key required</li>
+          <li>Identical tool dispatch interface as primary engine</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:16px;">
+      <h3 style="font-size:14px; margin-bottom:12px;">Sample Regex Rules</h3>
+      <pre>
+# 9 bilingual regex rules — _RULES in agent_orchestrator.py
+_RULES = [
+  (r"(route|path|way|how.+get|navigate|导航|路线|怎么走)",
+   "plan_route"),
+
+  (r"(congestion|crowd|busy|jam|堵|拥挤|人多)",
+   "get_congestion"),
+
+  (r"(wheelchair|accessible|lift|elevator|无障碍|轮椅|电梯)",
+   "find_connector", {"type": "lift", "accessible": True}),
+
+  (r"(escalator|扶梯)",
+   "find_connector", {"type": "escalator"}),
+
+  (r"(stair|楼梯)",
+   "find_connector", {"type": "stair"}),
+
+  (r"(busy|how many|occupancy|环境|人流|多少人)",
+   "query_environment"),
+
+  (r"(simulate|scenario|仿真|场景)",
+   "simulate_scenario"),
+
+  (r"(region|area|zone|区域|区)",
+   "list_semantic_regions"),
+
+  (r".*",                       # catch-all → RAG knowledge base
+   "rag_query"),
+]</pre>
+    </div>
+  </section>
+
+  <!-- RAG -->
+  <section id="rag">
+    <h2><span class="section-num">04</span> RAG Knowledge Base (ChromaDB)</h2>
+    <p class="section-desc">A ChromaDB collection indexes station knowledge documents for top-k chunk retrieval.</p>
+
+    <div class="card-grid card-grid-3 reveal">
+      <div class="stat-card accent">
+        <div class="stat-icon">📄</div>
+        <div class="stat-value">4</div>
+        <div class="stat-label">Knowledge Documents</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-value">top-3</div>
+        <div class="stat-label">Chunks Retrieved</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">🌐</div>
+        <div class="stat-value">EN + CN</div>
+        <div class="stat-label">Bilingual Index</div>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:16px;">
+      <h3 style="font-size:14px; margin-bottom:10px;">Indexed Knowledge Documents</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Document</th><th>Content</th><th>Chunks</th></tr></thead>
+          <tbody>
+            <tr><td><code>station_overview.md</code></td><td>Station layout, floor descriptions, operating hours</td><td>~18</td></tr>
+            <tr><td><code>connector_guide.md</code></td><td>Staircase/escalator/lift locations, accessibility info</td><td>~24</td></tr>
+            <tr><td><code>emergency_procedures.md</code></td><td>Emergency exit routes, safety procedures</td><td>~12</td></tr>
+            <tr><td><code>faq.md</code></td><td>Common navigation questions, ticketing, services</td><td>~30</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-teal" style="margin-top:12px; margin-bottom:0;">
+        <strong>Embedding Model</strong>
+        <code>sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2</code> (384-dim)
+        handles both English and Chinese queries without separate indices.
+      </div>
+    </div>
+  </section>
+
+  <!-- FAISS -->
+  <section id="faiss">
+    <h2><span class="section-num">05</span> FAISS Semantic Node Index</h2>
+    <p class="section-desc">A FAISS flat index over node semantic labels allows fuzzy spatial grounding — "ticket gate" → nearest node ID.</p>
+
+    <div class="card reveal">
+      <h3 style="font-size:14px; margin-bottom:10px;">How It Works</h3>
+      <div class="timeline" style="margin-top:0;">
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">1</span><span class="tl-title">Node label embedding</span></div>
+          <div class="tl-body"><p>Each node is assigned a human-readable semantic label (e.g., <em>"platform edge escalator top"</em>, <em>"main exit ticket gate"</em>). Labels are embedded to 384-dim vectors.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">2</span><span class="tl-title">FAISS flat L2 index</span></div>
+          <div class="tl-body"><p>All 18,648 node vectors are added to a FAISS <code>IndexFlatL2</code>. Stored as <code>faiss_node_index.bin</code> + <code>node_label_map.json</code>.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">3</span><span class="tl-title">Query-time grounding</span></div>
+          <div class="tl-body"><p>When the agent receives an entity mention (e.g., <em>"nearest wheelchair lift"</em>), the FAISS index returns the top-5 matching node IDs, which are passed to <code>plan_route</code> as candidate origins/destinations.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-purple reveal" style="margin-top:8px;">
+      <strong>Dual-Index Architecture</strong>
+      ChromaDB (document chunks) + FAISS (graph nodes) operate in parallel:
+      ChromaDB answers <em>"what is X"</em>-style questions; FAISS resolves
+      <em>"where is X"</em>-style spatial grounding. Both indices are queried in every
+      non-trivial LLM turn and their results merged into the system prompt context.
+    </div>
+  </section>
+
+  <!-- LORA -->
+  <section id="lora">
+    <h2><span class="section-num">06</span> LoRA Fine-tuning (Optional)</h2>
+    <p class="section-desc">A LoRA adapter is prepared for domain-specific fine-tuning of a smaller base model when API access is not desired.</p>
+
+    <div class="card reveal">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Aspect</th><th>Configuration</th></tr></thead>
+          <tbody>
+            <tr><td>Base model</td><td><code>deepseek-r1-distill-qwen-1.5b</code></td></tr>
+            <tr><td>LoRA rank (r)</td><td>8</td></tr>
+            <tr><td>LoRA alpha</td><td>16</td></tr>
+            <tr><td>Target modules</td><td><code>q_proj, v_proj</code></td></tr>
+            <tr><td>Training data</td><td>Synthetic QA pairs from the station knowledge base (~400 examples)</td></tr>
+            <tr><td>Training framework</td><td>HuggingFace PEFT + Transformers</td></tr>
+            <tr><td>Inference mode</td><td>Local CPU/GPU — no API dependency</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLES -->
+  <section id="examples">
+    <h2><span class="section-num">07</span> Q&amp;A Examples</h2>
+    <p class="section-desc">Sample natural-language queries and the tools they invoke.</p>
+
+    <div class="reveal">
+      <div class="qa-pair">
+        <div class="qa-q">How do I get from the platform to Exit B using a wheelchair?</div>
+        <div class="qa-a">The accessible route from platform (F1) to Exit B (F3) uses Lift 02 near the centre of the platform. Estimated time: 4 min 12 sec. The lift is currently unoccupied (0 of 8 capacity).</div>
+        <div class="qa-tool">get_accessibility_path(origin="platform_centre", destination="exit_B") → find_connector(type="lift")</div>
+      </div>
+      <div class="qa-pair">
+        <div class="qa-q">Which exit is least congested right now?</div>
+        <div class="qa-a">Exit A (F4, north) has the lowest congestion factor at 0.12. Exit C (0.41) and Exit B (0.67) are busier. I recommend Exit A via the east escalator bank.</div>
+        <div class="qa-tool">get_congestion(area="exits") → query_environment(floor="F4")</div>
+      </div>
+      <div class="qa-pair">
+        <div class="qa-q">现在站台有多少人？</div>
+        <div class="qa-a">目前站台层（F1）有约 47 名乘客，集中在中央候车区。拥挤系数为 0.23，属于正常水平。</div>
+        <div class="qa-tool">query_environment(floor="F1", region="platform")</div>
+      </div>
+      <div class="qa-pair">
+        <div class="qa-q">Show me the dynamic simulation results after the train arrives.</div>
+        <div class="qa-a">Scenario B (Dynamic): after train arrival at tick 120, 312 re-plan events were triggered. Average travel time increased to 178.4 s (+11% vs. baseline). Peak congestion was 0.78 near the main staircase.</div>
+        <div class="qa-tool">simulate_scenario(scenario="dynamic")</div>
+      </div>
+      <div class="qa-pair">
+        <div class="qa-q">Plan the fastest route from the ticket gate to the eastbound platform.</div>
+        <div class="qa-a">Fastest route: Ticket Gate → Main Concourse → Escalator E2 (down) → Platform F1 East. Estimated time: 2 min 8 sec (128 s). 3 floor transitions via 1 escalator.</div>
+        <div class="qa-tool">plan_route(origin="ticket_gate", destination="platform_east", mode="fast")</div>
+      </div>
+    </div>
+
+    <div class="iframe-wrap reveal" style="margin-top:24px;">
+      <iframe src="interactive/interactive_entrance_routes.html" height="580" title="Entrance routes"></iframe>
+      <div class="iframe-label">🗺️ Interactive entrance route explorer — click entrances to see available paths</div>
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/js/nav.js"></script>
+</body>
+</html>
