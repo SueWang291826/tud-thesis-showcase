@@ -7,6 +7,31 @@
   <meta name="description" content="Full evaluation results: arrival rates, travel-time distributions, scenario comparisons, and image gallery for the TUD-Station navigation system.">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
+    .exp-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .exp-card {
+      position: relative;
+      padding-top: 40px;
+    }
+
+    .exp-label {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      min-width: 28px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
     .gallery-filter {
       display: flex;
       flex-wrap: wrap;
@@ -36,8 +61,15 @@
     .gallery-item { display: block; }
     .gallery-item.hidden { display: none; }
 
-    @media (max-width:760px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width:480px) { .gallery-grid { grid-template-columns: 1fr; } }
+    @media (max-width:760px) {
+      .exp-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width:480px) {
+      .exp-grid { grid-template-columns: 1fr; }
+      .gallery-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -68,6 +100,7 @@
     </div>
     <div class="nav-group">
       <div class="nav-group-label">On This Page</div>
+      <a href="#chapter6"><span class="nav-icon">·</span>Chapter 6 Logic</a>
       <a href="#summary"><span class="nav-icon">·</span>Summary Metrics</a>
       <a href="#travel-time"><span class="nav-icon">·</span>Travel Time Analysis</a>
       <a href="#congestion"><span class="nav-icon">·</span>Congestion Analysis</a>
@@ -86,9 +119,10 @@
     <h1>📊 Results &amp; Evaluation</h1>
     <p class="subtitle">
       Quantitative evaluation of the full pipeline: graph quality metrics, ABM simulation
-      outcomes across three scenarios, agent response accuracy, and visual outputs.
+      outcomes across three scenarios, Chapter 6 experiment logic, and publication-ready visual outputs.
     </p>
     <div class="tag-row" style="margin-top:14px;">
+      <span class="tag tag-blue">6-experiment thesis logic</span>
       <span class="tag tag-green">98.5% arrival rate</span>
       <span class="tag tag-blue">160.2 s avg travel</span>
       <span class="tag tag-orange">3 scenarios</span>
@@ -96,9 +130,92 @@
     </div>
   </div>
 
+  <!-- CHAPTER 6 LOGIC -->
+  <section id="chapter6">
+    <h2><span class="section-num">01</span> Chapter 6 Experiment Logic</h2>
+    <p class="section-desc">
+      Chapter 6 is organized as a progression from reference behaviour to adaptive routing, profile effects,
+      parameter sensitivity, and eventual capacity limits. The evaluation logic is therefore sequential, not just descriptive.
+    </p>
+
+    <div class="callout callout-blue reveal">
+      <strong>Logic chain</strong>
+      Experiment A establishes the static reference. B measures the impact of congestion-aware rerouting against that reference.
+      C isolates single-profile effects. D restores mixed populations. E varies the replanning policy itself. F then pushes both
+      graph branches toward demand-driven breakdown.
+    </div>
+
+    <div class="exp-grid reveal" style="margin-top:18px;">
+      <div class="card exp-card">
+        <span class="exp-label">A</span>
+        <h3 style="font-size:14px; margin-bottom:10px;">Baseline static reference</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Defines the no-rerouting benchmark for arrival, travel, waiting, and queue metrics before adaptive behaviour is introduced.
+        </p>
+      </div>
+      <div class="card exp-card">
+        <span class="exp-label">B</span>
+        <h3 style="font-size:14px; margin-bottom:10px;">Static vs. congestion-aware replanning</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Compares static routing with dynamic congestion-aware routing to quantify trade-offs between throughput, delay, and reroute count.
+        </p>
+      </div>
+      <div class="card exp-card">
+        <span class="exp-label">C</span>
+        <h3 style="font-size:14px; margin-bottom:10px;">Single-profile pedestrian comparison</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Isolates profile-specific effects such as normal and elderly movement patterns under both static and dynamic conditions.
+        </p>
+      </div>
+      <div class="card exp-card">
+        <span class="exp-label">D</span>
+        <h3 style="font-size:14px; margin-bottom:10px;">Mixed-agent simulation</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Recombines heterogeneous agents into one population to assess whether the routing benefits still hold at system level.
+        </p>
+      </div>
+      <div class="card exp-card">
+        <span class="exp-label">E</span>
+        <h3 style="font-size:14px; margin-bottom:10px;">Algorithm-threshold sensitivity</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Varies replanning wait thresholds, congestion amplification, and neighbourhood spread to reveal policy-side trade-offs.
+        </p>
+      </div>
+      <div class="card exp-card">
+        <span class="exp-label">F</span>
+        <h3 style="font-size:14px; margin-bottom:10px;">Capacity / agent-load threshold test</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Sweeps demand, routing mode, and graph branch to expose how close each model variant can get to the station's operational limit.
+        </p>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/ch6_pipeline_outputs.png" alt="Chapter 6 pipeline outputs" loading="lazy">
+        <div class="img-caption">Figure 6.1 — pipeline outputs that feed the Chapter 6 evaluation: sampled nodes, extracted connectors, accessibility-tagged blind paths, and clearance distribution.</div>
+      </div>
+      <div class="img-card">
+        <img src="img/ch6_static_dynamic_comparison.png" alt="Chapter 6 static dynamic comparison" loading="lazy">
+        <div class="img-caption">Figure 6.5 — the core A→B comparison: dynamic rerouting preserves arrival while shifting travel, waiting, queue, and reroute behaviour.</div>
+      </div>
+    </div>
+
+    <div class="img-card reveal" style="margin-top:12px;">
+      <img src="img/ch6_overall_findings_summary.png" alt="Chapter 6 overall findings summary" loading="lazy">
+      <div class="img-caption">Figure 6.11 — Chapter 6 synthesis across A-F experiments: baseline behaviour, dynamic deltas, profile effects, graph-branch trade-offs, and capacity thresholds.</div>
+    </div>
+
+    <div class="callout callout-orange reveal" style="margin-top:20px;">
+      <strong>Interpretation</strong>
+      The thesis argument depends on this progression: rerouting is not evaluated in isolation. It is benchmarked against a static reference,
+      checked for profile-specific effects, re-tested under mixed populations, tuned through threshold sweeps, and finally stress-tested under rising demand.
+    </div>
+  </section>
+
   <!-- SUMMARY METRICS -->
   <section id="summary">
-    <h2><span class="section-num">01</span> Summary Metrics</h2>
+    <h2><span class="section-num">02</span> Summary Metrics</h2>
     <p class="section-desc">Top-line numbers from the evaluation report (<code>evaluation_report.json</code>).</p>
 
     <div class="card-grid card-grid-4 reveal">
@@ -210,7 +327,7 @@
 
   <!-- TRAVEL TIME -->
   <section id="travel-time">
-    <h2><span class="section-num">02</span> Travel Time Analysis</h2>
+    <h2><span class="section-num">03</span> Travel Time Analysis</h2>
     <p class="section-desc">Distribution, boxplots, and time-series evolution of agent travel times.</p>
 
     <div class="img-grid img-grid-2 reveal">
@@ -249,7 +366,7 @@
 
   <!-- CONGESTION -->
   <section id="congestion">
-    <h2><span class="section-num">03</span> Congestion Analysis</h2>
+    <h2><span class="section-num">04</span> Congestion Analysis</h2>
     <p class="section-desc">Spatial heatmaps and edge throughput reveal congestion patterns across all scenarios.</p>
 
     <div class="img-grid img-grid-3 reveal">
@@ -296,7 +413,7 @@
 
   <!-- ROUTE DIFF -->
   <section id="route-diff">
-    <h2><span class="section-num">04</span> Route Flow Difference Maps</h2>
+    <h2><span class="section-num">05</span> Route Flow Difference Maps</h2>
     <p class="section-desc">Delta flow maps show how agent routing shifts between scenarios.</p>
 
     <div class="img-grid img-grid-2 reveal">
@@ -329,7 +446,7 @@
 
   <!-- GALLERY -->
   <section id="gallery">
-    <h2><span class="section-num">05</span> Full Output Image Gallery</h2>
+    <h2><span class="section-num">06</span> Full Output Image Gallery</h2>
     <p class="section-desc">All pipeline output figures — click any image to enlarge. Filter by category.</p>
 
     <div class="gallery-filter">
@@ -395,6 +512,10 @@
         <img src="img/entrance_route_map.png" alt="Entrance routes" loading="lazy">
         <div class="img-caption">Entrance-to-platform route map</div>
       </div>
+      <div class="img-card gallery-item" data-cat="graph">
+        <img src="img/ch6_pipeline_outputs.png" alt="Chapter 6 pipeline outputs" loading="lazy">
+        <div class="img-caption">Chapter 6 pipeline outputs summary</div>
+      </div>
       <!-- simulation -->
       <div class="img-card gallery-item" data-cat="simulation">
         <img src="img/heatmap_scenA.png" alt="Heatmap A" loading="lazy">
@@ -459,6 +580,14 @@
       <div class="img-card gallery-item" data-cat="simulation">
         <img src="img/evaluation_summary.png" alt="Evaluation summary" loading="lazy">
         <div class="img-caption">Evaluation summary dashboard</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/ch6_static_dynamic_comparison.png" alt="Chapter 6 static dynamic comparison" loading="lazy">
+        <div class="img-caption">Chapter 6 static vs dynamic comparison</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/ch6_overall_findings_summary.png" alt="Chapter 6 overall findings summary" loading="lazy">
+        <div class="img-caption">Chapter 6 overall findings synthesis</div>
       </div>
       <!-- data -->
       <div class="img-card gallery-item" data-cat="data">

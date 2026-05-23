@@ -70,7 +70,7 @@
   <div class="sidebar-footer">
     <div>TU Delft · MSc Architecture · 2025</div>
     <div style="margin-top:6px">
-      <a href="https://github.com" target="_blank">GitHub ↗</a>
+      <a href="https://github.com/SueWang291826/tud-thesis-showcase" target="_blank">GitHub ↗</a>
     </div>
   </div>
 </aside>
@@ -225,10 +225,48 @@
     </div>
   </section>
 
+  <div class="stack-section reveal">
+    <h2>Chapter 6 Experiment Logic</h2>
+    <p class="sub" style="margin-bottom:16px;">
+      The thesis evaluation is structured as a six-experiment sequence: establish the static reference,
+      introduce dynamic rerouting, isolate profile effects, restore mixed populations, tune the replanning
+      policy, and finally push both graph branches toward capacity limits.
+    </p>
+
+    <div class="card-grid card-grid-3">
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:10px;">A-B · Reference to dynamic delta</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Experiment A defines the baseline static system. Experiment B then measures what congestion-aware
+          replanning changes relative to that fixed reference.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:10px;">C-D · Profile and population effects</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Experiment C isolates profile-specific behaviour; Experiment D brings heterogeneous agents back
+          together to test the full mixed population under the same routing logic.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:10px;">E-F · Policy sensitivity and limits</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Experiment E varies replanning thresholds and congestion weights; Experiment F stress-tests demand
+          until graph branch differences and capacity limits become visible.
+        </p>
+      </div>
+    </div>
+
+    <div class="hero-actions" style="margin-top:18px;">
+      <a href="results.html#chapter6" class="btn btn-primary">📘 Read the Chapter 6 Logic</a>
+      <a href="results.html" class="btn btn-outline">📊 Browse All Results</a>
+    </div>
+  </div>
+
   <!-- SECTION NAVIGATION CARDS -->
   <div class="section-cards">
     <h2>Explore the Documentation</h2>
-    <p class="sub">Five deep-dive sections walk through the full system end-to-end.</p>
+    <p class="sub">Six deep-dive sections cover the system, evaluation outputs, and the Chapter 6 experiment narrative.</p>
 
     <div class="card-grid card-grid-3 reveal">
       <a href="pipeline.html" class="nav-card">
@@ -261,11 +299,11 @@
         <div class="nc-desc">Arrival rates, travel-time distributions, scenario comparison and full image gallery.</div>
         <div class="nc-arrow">Read more →</div>
       </a>
-      <a href="experiment/docs/methodology/index.html" class="nav-card" target="_blank">
-        <div class="nc-icon">📖</div>
-        <div class="nc-title">Methodology Detail</div>
-        <div class="nc-desc">Full technical methodology document — all equations, code signatures, and design decisions.</div>
-        <div class="nc-arrow">Open doc ↗</div>
+      <a href="results.html#chapter6" class="nav-card">
+        <div class="nc-icon">📘</div>
+        <div class="nc-title">Chapter 6 Logic</div>
+        <div class="nc-desc">The thesis experiment chain from baseline reference and dynamic deltas to sensitivity analysis and capacity thresholds.</div>
+        <div class="nc-arrow">Read more →</div>
       </a>
     </div>
   </div>

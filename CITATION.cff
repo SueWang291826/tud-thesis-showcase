@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "TUD-Station: LLM Navigation Agent for Urban Rail Transit Stations"
+message: "If you use this repository, please cite it using the metadata from this file."
+type: software
+authors:
+  - family-names: Wang
+    given-names: Sue
+repository-code: "https://github.com/SueWang291826/tud-thesis-showcase"
+url: "https://suewang291826.github.io/tud-thesis-showcase/"
+abstract: "End-to-end MSc thesis project for IFC preprocessing, multi-level navigation graph construction, congestion-aware routing, agent-based simulation, and an LLM navigation agent for urban rail transit stations."
+keywords:
+  - BIM
+  - IFC
+  - indoor navigation
+  - agent-based simulation
+  - large language models
+  - urban rail transit
