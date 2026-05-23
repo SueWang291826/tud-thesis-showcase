@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TUD-Station — LLM Navigation Agent for Urban Rail Transit</title>
+  <meta name="description" content="An end-to-end system from IFC BIM parsing to a conversational LLM navigation agent for multi-level subway stations, featuring a 18,648-node graph, ABM simulation, and RAG knowledge retrieval.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* index-specific overrides */
+    #main { max-width: 1040px; }
+
+    .section-cards { padding: 40px 0; }
+    .section-cards h2 { font-size: 20px; margin-bottom: 6px; }
+    .section-cards .sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+
+    .stack-section { padding: 36px 0; border-top: 1px solid var(--border-soft); }
+    .stack-section h2 { font-size: 18px; margin-bottom: 16px; }
+
+    .stack-group { margin-bottom: 16px; }
+    .stack-group h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+
+    .about-section {
+      padding: 40px 0 20px;
+      border-top: 1px solid var(--border-soft);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    @media (max-width: 700px) {
+      .about-section { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Mobile nav toggle -->
+<button id="nav-toggle" aria-label="Toggle navigation"></button>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">TUD-Station</div>
+    <div class="logo-sub">MSc Thesis Project · BIM × LLM × Navigation</div>
+    <div class="badge-row">
+      <span class="tag tag-blue">GitHub Pages</span>
+      <span class="tag tag-green">Open Source</span>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a href="index.html"><span class="nav-icon">🏠</span>Home</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">System</div>
+      <a href="pipeline.html"><span class="nav-icon">⚙️</span>Pipeline (6 Steps)</a>
+      <a href="navgraph.html"><span class="nav-icon">🗺️</span>Navigation Graph</a>
+      <a href="simulation.html"><span class="nav-icon">🚶</span>ABM Simulation</a>
+      <a href="agent.html"><span class="nav-icon">🤖</span>LLM Agent</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Outcomes</div>
+      <a href="results.html"><span class="nav-icon">📊</span>Results &amp; Evaluation</a>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div>TU Delft · MSc Architecture · 2025</div>
+    <div style="margin-top:6px">
+      <a href="https://github.com" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">MSc Thesis · TU Delft · 2025</div>
+    <h1>LLM Navigation Agent<br>for Urban Rail Transit Stations</h1>
+    <p class="hero-sub">
+      An end-to-end pipeline transforming IFC BIM geometry into a conversational
+      AI agent — from 2.5D navigation graph construction and agent-based pedestrian
+      simulation to DeepSeek function-calling with RAG knowledge retrieval.
+    </p>
+    <div class="hero-actions">
+      <a href="pipeline.html" class="btn btn-primary">⚙️ Explore the Pipeline</a>
+      <a href="agent.html" class="btn btn-outline">🤖 See the Agent</a>
+      <a href="results.html" class="btn btn-outline">📊 View Results</a>
+    </div>
+
+    <!-- Key metrics -->
+    <div class="hero-metrics">
+      <div class="hero-metric">
+        <div class="hm-val count-up" data-target="18648">0</div>
+        <div class="hm-label">Graph Nodes</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hm-val count-up" data-target="68148">0</div>
+        <div class="hm-label">Graph Edges</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hm-val count-up" data-target="98.5" data-suffix="%">0%</div>
+        <div class="hm-label">Arrival Rate</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hm-val count-up" data-target="160.2" data-suffix="s">0s</div>
+        <div class="hm-label">Avg Travel Time</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT IS THIS PROJECT -->
+  <section id="overview" style="padding:40px 0 32px; border-bottom:1px solid var(--border-soft);">
+    <h2>
+      <span class="section-num">ABOUT</span>
+      What Is This Project?
+    </h2>
+    <p class="section-desc">
+      A complete research pipeline bridging BIM digital-twin technology with large language model agents.
+    </p>
+
+    <div class="callout callout-blue reveal">
+      <strong>Core Innovation</strong>
+      This system takes raw IFC BIM files of a real subway station and — without any manual
+      walkability annotation — automatically constructs a navigable graph, runs agent-based
+      pedestrian simulations, and exposes everything to a conversational LLM through a typed
+      tool SDK and dual-vector RAG retrieval.
+    </div>
+
+    <div class="card-grid card-grid-2 reveal" style="margin-top:20px;">
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:10px;">🏗️ BIM → World Model</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          Parses three IFC files (Platform F1, Concourse F3, Transport F4) using
+          <strong>ifcopenshell</strong> + <strong>Shapely</strong> to extract walkable
+          polygons, obstacles, staircase/escalator/lift connectors, and platform screen doors.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:10px;">🗺️ 2.5D Navigation Graph</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          0.5 m grid sampling produces <strong>18,648 nodes</strong> and <strong>68,148 edges</strong>
+          across four floors. Cross-level connections model staircase, escalator, and elevator
+          traversal with realistic time costs.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:10px;">🚶 Agent-Based Simulation</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          200 Mesa agents traverse three scenarios (Static flow · Dynamic train arrival ·
+          Wheelchair accessibility) with Dijkstra routing, real-time congestion feedback,
+          and route replanning.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px; margin-bottom:10px;">🤖 Conversational LLM Agent</h3>
+        <p style="font-size:13.5px; color:var(--muted);">
+          DeepSeek Function Calling + Regex fallback handles natural-language queries like
+          <em>"Which exit is least congested?"</em>  or <em>"Plan a wheelchair route from
+          platform to exit B."</em>  using RAG (ChromaDB) + FAISS node-vector index.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SYSTEM OVERVIEW / ARCH -->
+  <section id="architecture" style="padding:36px 0; border-bottom:1px solid var(--border-soft);">
+    <h2>
+      <span class="section-num">ARCH</span>
+      Three-Layer Architecture
+    </h2>
+    <p class="section-desc">The system is structured in three cleanly separated layers, each independently testable.</p>
+
+    <div style="display:flex; flex-direction:column; gap:8px; max-width:740px;" class="reveal">
+      <div class="arch-box layer-3">
+        <div class="layer-label" style="color:var(--purple);">Layer 3 · Intelligence</div>
+        <div class="layer-title">LLM Agent <code style="font-size:12px;">agent_orchestrator.py</code></div>
+        <div class="layer-items">
+          <span class="tag tag-purple">DeepSeek Function Calling</span>
+          <span class="tag tag-purple">Regex Fallback (9 rules)</span>
+          <span class="tag tag-purple">ChromaDB RAG</span>
+          <span class="tag tag-purple">FAISS Node Index</span>
+          <span class="tag tag-purple">Bilingual (EN/CN)</span>
+        </div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-box layer-2">
+        <div class="layer-label" style="color:var(--green);">Layer 2 · Tools</div>
+        <div class="layer-title">Tool Layer SDK <code style="font-size:12px;">tool_layer.py · tool_schemas.py</code></div>
+        <div class="layer-items">
+          <span class="tag tag-green">query_environment</span>
+          <span class="tag tag-green">plan_route</span>
+          <span class="tag tag-green">simulate_scenario</span>
+          <span class="tag tag-green">get_congestion</span>
+          <span class="tag tag-green">find_connector</span>
+          <span class="tag tag-green">WorldModelCache</span>
+        </div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-box layer-1">
+        <div class="layer-label" style="color:var(--accent);">Layer 1 · World Model</div>
+        <div class="layer-title">Pipeline Steps 0–6 <code style="font-size:12px;">run_pipeline.py</code></div>
+        <div class="layer-items">
+          <span class="tag tag-blue">IFC Geometry</span>
+          <span class="tag tag-blue">Node Sampling</span>
+          <span class="tag tag-blue">NavGraph (NetworkX)</span>
+          <span class="tag tag-blue">OD Routing</span>
+          <span class="tag tag-blue">ABM Simulation</span>
+          <span class="tag tag-blue">Evaluation</span>
+        </div>
+      </div>
+      <div style="margin-top:8px; display:flex; gap:8px;">
+        <div style="flex:1; text-align:center; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12.5px; color:var(--muted);">
+          📁 IFC BIM files (3 levels)<br><span style="font-size:11px;">站台层 · 站厅层 · 设备层</span>
+        </div>
+        <div style="flex:1; text-align:center; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12.5px; color:var(--muted);">
+          📋 CSV tables<br><span style="font-size:11px;">obstacles · connectors · barriers</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION NAVIGATION CARDS -->
+  <div class="section-cards">
+    <h2>Explore the Documentation</h2>
+    <p class="sub">Five deep-dive sections walk through the full system end-to-end.</p>
+
+    <div class="card-grid card-grid-3 reveal">
+      <a href="pipeline.html" class="nav-card">
+        <div class="nc-icon">⚙️</div>
+        <div class="nc-title">Pipeline</div>
+        <div class="nc-desc">Six-step end-to-end data flow from raw IFC to routing outputs. 96.5 s total runtime.</div>
+        <div class="nc-arrow">Read more →</div>
+      </a>
+      <a href="navgraph.html" class="nav-card">
+        <div class="nc-icon">🗺️</div>
+        <div class="nc-title">Navigation Graph</div>
+        <div class="nc-desc">BIM geometry extraction, 0.5 m grid sampling, cross-level edge construction and the 2.5D graph.</div>
+        <div class="nc-arrow">Read more →</div>
+      </a>
+      <a href="simulation.html" class="nav-card">
+        <div class="nc-icon">🚶</div>
+        <div class="nc-title">ABM Simulation</div>
+        <div class="nc-desc">200 Mesa agents, 3 scenarios, real-time congestion and interactive visualisations.</div>
+        <div class="nc-arrow">Read more →</div>
+      </a>
+      <a href="agent.html" class="nav-card">
+        <div class="nc-icon">🤖</div>
+        <div class="nc-title">LLM Agent</div>
+        <div class="nc-desc">DeepSeek function calling, RAG retrieval, FAISS node index, and the tool schema design.</div>
+        <div class="nc-arrow">Read more →</div>
+      </a>
+      <a href="results.html" class="nav-card">
+        <div class="nc-icon">📊</div>
+        <div class="nc-title">Results &amp; Evaluation</div>
+        <div class="nc-desc">Arrival rates, travel-time distributions, scenario comparison and full image gallery.</div>
+        <div class="nc-arrow">Read more →</div>
+      </a>
+      <a href="experiment/docs/methodology/index.html" class="nav-card" target="_blank">
+        <div class="nc-icon">📖</div>
+        <div class="nc-title">Methodology Detail</div>
+        <div class="nc-desc">Full technical methodology document — all equations, code signatures, and design decisions.</div>
+        <div class="nc-arrow">Open doc ↗</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="stack-section reveal">
+    <h2>Technology Stack</h2>
+
+    <div class="stack-group">
+      <h3>BIM &amp; Geometry</h3>
+      <div class="tag-row">
+        <span class="tag tag-blue">ifcopenshell</span>
+        <span class="tag tag-blue">Shapely</span>
+        <span class="tag tag-blue">IFC2X3 / IFC4</span>
+        <span class="tag tag-blue">AABB obstacle detection</span>
+        <span class="tag tag-blue">Platform Screen Doors</span>
+      </div>
+    </div>
+
+    <div class="stack-group">
+      <h3>Graph &amp; Routing</h3>
+      <div class="tag-row">
+        <span class="tag tag-green">NetworkX</span>
+        <span class="tag tag-green">Dijkstra shortest path</span>
+        <span class="tag tag-green">2.5D multi-level graph</span>
+        <span class="tag tag-green">OD matrix</span>
+        <span class="tag tag-green">Semantic regions</span>
+      </div>
+    </div>
+
+    <div class="stack-group">
+      <h3>Simulation</h3>
+      <div class="tag-row">
+        <span class="tag tag-orange">Mesa ABM</span>
+        <span class="tag tag-orange">200 agents</span>
+        <span class="tag tag-orange">Dynamic rerouting</span>
+        <span class="tag tag-orange">Congestion heatmaps</span>
+        <span class="tag tag-orange">Wheelchair scenario</span>
+      </div>
+    </div>
+
+    <div class="stack-group">
+      <h3>LLM / AI</h3>
+      <div class="tag-row">
+        <span class="tag tag-purple">DeepSeek API</span>
+        <span class="tag tag-purple">Function Calling</span>
+        <span class="tag tag-purple">ChromaDB RAG</span>
+        <span class="tag tag-purple">FAISS vector index</span>
+        <span class="tag tag-purple">LoRA fine-tuning</span>
+        <span class="tag tag-purple">sentence-transformers</span>
+      </div>
+    </div>
+
+    <div class="stack-group">
+      <h3>Serving &amp; Visualisation</h3>
+      <div class="tag-row">
+        <span class="tag tag-teal">FastAPI</span>
+        <span class="tag tag-teal">Plotly</span>
+        <span class="tag tag-teal">Matplotlib</span>
+        <span class="tag tag-teal">GeoJSON</span>
+        <span class="tag tag-teal">GitHub Pages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="about-section reveal">
+    <div>
+      <h2 style="font-size:18px; margin-bottom:12px;">About This Thesis</h2>
+      <p style="font-size:13.5px; color:var(--muted); line-height:1.7;">
+        This research investigates how BIM digital-twin infrastructure can be leveraged
+        to power an LLM-based conversational navigation agent for complex multi-level
+        transit environments. The station modelled is a real urban rail station with
+        four floor levels, multiple connector types, and over 700 individual spatial elements.
+      </p>
+      <p style="font-size:13.5px; color:var(--muted); line-height:1.7; margin-top:10px;">
+        The complete pipeline runs in <strong>96.5 seconds</strong> on a standard laptop,
+        producing a fully queryable navigation graph, three simulated pedestrian scenarios,
+        and a deployed conversational agent.
+      </p>
+      <div class="tag-row" style="margin-top:14px;">
+        <span class="tag tag-gray">TU Delft</span>
+        <span class="tag tag-gray">MSc Architecture</span>
+        <span class="tag tag-gray">2025</span>
+      </div>
+    </div>
+    <div>
+      <h2 style="font-size:18px; margin-bottom:12px;">Station Topology</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Floor</th>
+              <th>Name</th>
+              <th>Elevation</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>F4</strong></td>
+              <td>Transport</td>
+              <td>17.4 m</td>
+              <td><span class="tag tag-orange" style="font-size:11px;">transport</span></td>
+            </tr>
+            <tr>
+              <td><strong>F3</strong></td>
+              <td>Concourse</td>
+              <td>12.1 m</td>
+              <td><span class="tag tag-blue" style="font-size:11px;">concourse</span></td>
+            </tr>
+            <tr>
+              <td><strong>F2</strong></td>
+              <td>Equipment</td>
+              <td>5.3 m</td>
+              <td><span class="tag tag-gray" style="font-size:11px;">connector pass</span></td>
+            </tr>
+            <tr>
+              <td><strong>F1</strong></td>
+              <td>Platform</td>
+              <td>0.0 m</td>
+              <td><span class="tag tag-green" style="font-size:11px;">platform</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="assets/js/nav.js"></script>
+</body>
+</html>

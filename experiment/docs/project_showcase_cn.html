@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>地铁站智能导航 Agent 系统 — 项目展示</title>
+  <style>
+    /* ===================== RESET & BASE ===================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #fafbfc;
+      --surface:    #ffffff;
+      --card:       #f4f7fa;
+      --border:     #e1e6eb;
+      --accent:     #2563eb;
+      --accent-l:   #dbeafe;
+      --green:      #059669;
+      --green-l:    #d1fae5;
+      --orange:     #d97706;
+      --orange-l:   #fef3c7;
+      --purple:     #7c3aed;
+      --purple-l:   #ede9fe;
+      --red:        #dc2626;
+      --red-l:      #fee2e2;
+      --teal:       #0d9488;
+      --teal-l:     #ccfbf1;
+      --text:       #1e293b;
+      --muted:      #64748b;
+      --code-bg:    #f1f5f9;
+      --shadow:     0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+      --shadow-lg:  0 8px 32px rgba(0,0,0,.10);
+      --radius:     12px;
+      --radius-sm:  8px;
+      --nav-w:      260px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+                   'Microsoft YaHei', system-ui, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.75; font-size: 15px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.88em; background: var(--code-bg); padding: 2px 6px;
+      border-radius: 4px; color: #0f172a;
+    }
+    pre {
+      background: #1e293b; color: #e2e8f0; padding: 20px 24px;
+      border-radius: var(--radius-sm); overflow-x: auto;
+      font-size: 13.5px; line-height: 1.65; margin: 16px 0;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    img { max-width: 100%; border-radius: var(--radius-sm); }
+
+    /* ===================== SIDEBAR ===================== */
+    #sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--nav-w); height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 24px 0; z-index: 100;
+      box-shadow: 2px 0 8px rgba(0,0,0,.04);
+    }
+    #sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    #sidebar .logo h1 { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.3px; }
+    #sidebar .logo p { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .nav-group { padding: 6px 16px; }
+    .nav-group-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--muted); margin: 12px 0 6px;
+    }
+    .nav-link {
+      display: block; padding: 6px 12px; border-radius: 6px;
+      color: var(--text); font-size: 13.5px; transition: all .15s;
+    }
+    .nav-link:hover { background: var(--accent-l); color: var(--accent); text-decoration: none; }
+
+    /* ===================== MAIN ===================== */
+    main {
+      margin-left: var(--nav-w); padding: 48px 56px 80px; max-width: 920px;
+    }
+    @media (max-width: 900px) {
+      #sidebar { display: none; }
+      main { margin-left: 0; padding: 32px 20px 60px; }
+    }
+
+    /* ===================== HERO ===================== */
+    .hero {
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+      border-radius: 16px; padding: 48px 44px; color: #fff;
+      margin-bottom: 48px; box-shadow: var(--shadow-lg);
+      position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: ''; position: absolute; right: -60px; top: -60px;
+      width: 260px; height: 260px; border-radius: 50%;
+      background: rgba(255,255,255,.08);
+    }
+    .hero h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+    .hero p { font-size: 16px; opacity: .92; margin-top: 12px; max-width: 580px; }
+    .hero .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+    .hero .tag {
+      background: rgba(255,255,255,.18); padding: 4px 14px;
+      border-radius: 20px; font-size: 12.5px; font-weight: 500;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ===================== SECTIONS ===================== */
+    .section { margin-bottom: 48px; }
+    .section h2 {
+      font-size: 22px; font-weight: 700; margin-bottom: 20px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--accent);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section h3 { font-size: 17px; font-weight: 650; margin: 24px 0 10px; color: var(--text); }
+    .section h4 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; color: var(--muted); }
+    .section p, .section li { color: #334155; }
+
+    /* ===================== CARDS ===================== */
+    .card-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px; margin: 16px 0;
+    }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .card .card-icon { font-size: 28px; margin-bottom: 10px; }
+    .card .card-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .card .card-desc { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+
+    /* ===================== BADGE ===================== */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 11.5px; font-weight: 600;
+    }
+    .badge-blue { background: var(--accent-l); color: var(--accent); }
+    .badge-green { background: var(--green-l); color: var(--green); }
+    .badge-orange { background: var(--orange-l); color: var(--orange); }
+    .badge-purple { background: var(--purple-l); color: var(--purple); }
+    .badge-red { background: var(--red-l); color: var(--red); }
+    .badge-teal { background: var(--teal-l); color: var(--teal); }
+
+    /* ===================== TABLE ===================== */
+    table {
+      width: 100%; border-collapse: collapse; margin: 14px 0;
+      font-size: 13.5px; border-radius: var(--radius-sm); overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: var(--card); font-weight: 650; color: var(--text); font-size: 12.5px; text-transform: uppercase; letter-spacing: .4px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; }
+
+    /* ===================== FLOW DIAGRAM ===================== */
+    .flow {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0;
+    }
+    .flow-step {
+      background: var(--surface); border: 1.5px solid var(--accent);
+      border-radius: var(--radius-sm); padding: 10px 16px; font-size: 13px;
+      font-weight: 600; color: var(--accent); text-align: center; min-width: 100px;
+    }
+    .flow-arrow { color: var(--muted); font-size: 20px; font-weight: 300; }
+
+    /* ===================== PHASE TIMELINE ===================== */
+    .timeline { position: relative; padding-left: 32px; margin: 20px 0; }
+    .timeline::before {
+      content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px;
+      width: 2px; background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 28px; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -32px; top: 4px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent); border: 3px solid var(--surface);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .timeline-item.done::before { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+    .timeline-item.wip::before { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+    .timeline-item.future::before { background: var(--border); box-shadow: 0 0 0 2px var(--border); }
+    .timeline-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .timeline-item p { font-size: 13.5px; color: var(--muted); }
+
+    /* ===================== ARCHITECTURE DIAGRAM ===================== */
+    .arch-diagram {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px; margin: 20px 0;
+      box-shadow: var(--shadow);
+    }
+    .arch-layer {
+      border: 2px dashed var(--border); border-radius: var(--radius-sm);
+      padding: 16px 20px; margin-bottom: 12px; position: relative;
+    }
+    .arch-layer-label {
+      position: absolute; top: -11px; left: 16px;
+      background: var(--surface); padding: 0 8px;
+      font-size: 12px; font-weight: 700; color: var(--accent);
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .arch-boxes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .arch-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; padding: 8px 14px; font-size: 12.5px;
+      font-weight: 600; color: var(--text);
+    }
+    .arch-box.accent { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+    .arch-box.green { background: var(--green-l); border-color: var(--green); color: var(--green); }
+    .arch-box.purple { background: var(--purple-l); border-color: var(--purple); color: var(--purple); }
+    .arch-box.orange { background: var(--orange-l); border-color: var(--orange); color: var(--orange); }
+    .arch-arrow {
+      text-align: center; color: var(--muted); font-size: 18px; margin: 4px 0;
+    }
+
+    /* ===================== CALLOUT ===================== */
+    .callout {
+      border-left: 4px solid var(--accent); background: var(--accent-l);
+      padding: 14px 20px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin: 16px 0; font-size: 14px; color: #1e40af;
+    }
+    .callout.green { border-color: var(--green); background: var(--green-l); color: #065f46; }
+    .callout.orange { border-color: var(--orange); background: var(--orange-l); color: #92400e; }
+    .callout.purple { border-color: var(--purple); background: var(--purple-l); color: #5b21b6; }
+
+    /* ===================== CHALLENGE ITEMS ===================== */
+    .challenge-list { display: flex; flex-direction: column; gap: 14px; margin: 16px 0; }
+    .challenge-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 4px solid var(--orange); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 16px 20px; box-shadow: var(--shadow);
+    }
+    .challenge-item .ch-title { font-size: 14.5px; font-weight: 700; color: var(--orange); margin-bottom: 8px; }
+    .challenge-item .ch-problem { font-size: 13.5px; color: var(--text); margin-bottom: 6px; }
+    .challenge-item .ch-solution {
+      font-size: 13px; color: #065f46; background: var(--green-l);
+      border-radius: 6px; padding: 8px 12px; margin-top: 6px;
+    }
+    .challenge-item .ch-solution strong { color: var(--green); }
+
+    /* ===================== METRIC BOXES ===================== */
+    .metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 16px 0; }
+    .metric-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 12px;
+      text-align: center; box-shadow: var(--shadow);
+    }
+    .metric-box .m-val { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1.2; }
+    .metric-box .m-label { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+    .metric-box.green .m-val { color: var(--green); }
+    .metric-box.orange .m-val { color: var(--orange); }
+    .metric-box.purple .m-val { color: var(--purple); }
+    .metric-box.red .m-val { color: var(--red); }
+
+    /* ===================== LIFECYCLE FLOW ===================== */
+    .lifecycle {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 4px; margin: 12px 0; background: var(--card);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .lifecycle-step {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 11px; font-size: 12.5px;
+      font-weight: 600; color: var(--text); white-space: nowrap;
+    }
+    .lifecycle-step.accent { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+    .lifecycle-step.green { background: var(--green-l); border-color: var(--green); color: var(--green); }
+    .lifecycle-step.purple { background: var(--purple-l); border-color: var(--purple); color: var(--purple); }
+    .lifecycle-step.orange { background: var(--orange-l); border-color: var(--orange); color: var(--orange); }
+    .lifecycle-arr { color: var(--muted); font-size: 14px; padding: 0 2px; }
+
+    /* ===================== MISC ===================== */
+    .sep { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .muted { color: var(--muted); }
+    .text-sm { font-size: 13px; }
+    ul, ol { padding-left: 24px; }
+    li { margin-bottom: 6px; }
+    .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; }
+  </style>
+</head>
+<body>
+
+<!-- ===================== SIDEBAR NAV ===================== -->
+<nav id="sidebar">
+  <div class="logo">
+    <h1>🚇 Station Agent</h1>
+    <p>智能地铁站导航 Agent 系统</p>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">概览</div>
+    <a class="nav-link" href="#hero">项目简介</a>
+    <a class="nav-link" href="#innovations">核心创新亮点</a>
+    <a class="nav-link" href="#problem">问题定义</a>
+    <a class="nav-link" href="#architecture">系统架构</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">数据管线</div>
+    <a class="nav-link" href="#step0">Step 0 · 数据加载</a>
+    <a class="nav-link" href="#step1">Step 1 · 几何提取</a>
+    <a class="nav-link" href="#step2">Step 2 · 节点采样</a>
+    <a class="nav-link" href="#step3">Step 3 · 图构建</a>
+    <a class="nav-link" href="#step4">Step 4 · 路径规划</a>
+    <a class="nav-link" href="#step5">Step 5 · ABM 仿真</a>
+    <a class="nav-link" href="#step6">Step 6 · 评估分析</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Agent 系统</div>
+    <a class="nav-link" href="#agent-arch">三层 Agent 架构</a>
+    <a class="nav-link" href="#tool-layer">工具层 SDK</a>
+    <a class="nav-link" href="#orchestrator">LLM 编排器</a>
+    <a class="nav-link" href="#rest-api">REST API 层</a>
+    <a class="nav-link" href="#rag">RAG 知识库</a>
+    <a class="nav-link" href="#frontend">Web 前端</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">展望</div>
+    <a class="nav-link" href="#challenges">技术难点</a>
+    <a class="nav-link" href="#roadmap">开发进度</a>
+    <a class="nav-link" href="#vision">终极愿景</a>
+  </div>
+</nav>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main>
+
+<!-- ── HERO ── -->
+<div class="hero" id="hero">
+  <h1>🚇 地铁站多层室内导航 — LLM Agent 系统</h1>
+  <p>将 BIM/IFC 建筑模型、2.5D 导航图、ABM 仿真引擎与大语言模型结合，构建一个可实时问答、路径规划、人群仿真的智能导航 Agent。全系统仅依赖原始 IFC 建筑模型自动推导导航图，无需任何外部地图 API。</p>
+  <div class="tags">
+    <span class="tag">IFC/BIM 自动解析</span>
+    <span class="tag">NetworkX 2.5D 导航图</span>
+    <span class="tag">ABM 人群仿真</span>
+    <span class="tag">DeepSeek / GPT-4o Function Calling</span>
+    <span class="tag">RAG + ChromaDB + FAISS</span>
+    <span class="tag">FastAPI REST</span>
+    <span class="tag">Plotly 3D 可视化</span>
+    <span class="tag">TU Delft 硕士论文 2026</span>
+  </div>
+  <div style="margin-top:24px; display:flex; gap:24px; flex-wrap:wrap;">
+    <div style="background:rgba(255,255,255,.15); border-radius:10px; padding:14px 20px; backdrop-filter:blur(4px);">
+      <div style="font-size:28px; font-weight:800;">~20K</div>
+      <div style="font-size:12px; opacity:.85;"> 导航图节点</div>
+    </div>
+    <div style="background:rgba(255,255,255,.15); border-radius:10px; padding:14px 20px; backdrop-filter:blur(4px);">
+      <div style="font-size:28px; font-weight:800;">~60K</div>
+      <div style="font-size:12px; opacity:.85;">导航图边</div>
+    </div>
+    <div style="background:rgba(255,255,255,.15); border-radius:10px; padding:14px 20px; backdrop-filter:blur(4px);">
+      <div style="font-size:28px; font-weight:800;">8</div>
+      <div style="font-size:12px; opacity:.85;">Agent 工具 SDK</div>
+    </div>
+    <div style="background:rgba(255,255,255,.15); border-radius:10px; padding:14px 20px; backdrop-filter:blur(4px);">
+      <div style="font-size:28px; font-weight:800;">98%</div>
+      <div style="font-size:12px; opacity:.85;">仿真到达率</div>
+    </div>
+    <div style="background:rgba(255,255,255,.15); border-radius:10px; padding:14px 20px; backdrop-filter:blur(4px);">
+      <div style="font-size:28px; font-weight:800;">3</div>
+      <div style="font-size:12px; opacity:.85;">LLM Provider 支持</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 核心创新亮点 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="innovations">
+  <h2>✨ 核心创新亮点</h2>
+  <p>本项目在以下几个维度做出了有别于传统室内导航系统的创新，是论文的核心贡献：</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🏗️</div>
+      <div class="card-title">零地图 API — 纯 BIM 推导</div>
+      <div class="card-desc">完全不依赖 Google Maps / OpenStreetMap 等外部地图服务，从原始 IFC 建筑模型（IfcSlab + IfcWall + 连通器）自动推导 2.5D 可步行网络，适配任意建筑图纸。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Function Calling 工具编排</div>
+      <div class="card-desc">LLM 不直接生成答案，而是通过 OpenAI Function Calling 精准调用 8 个结构化工具（图查询/路径规划/仿真/评估），实现可解释、可审计的 Agent 决策链。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔀</div>
+      <div class="card-title">动态拥堵感知重规划</div>
+      <div class="card-desc">ABM 仿真中，每个 Agent 实时感知路径拥堵度（连通器队列长度），自动触发 Dijkstra 重规划（惩罚权重），实测 78% 的乘客触发重规划，展示真实涌现行为。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">♿</div>
+      <div class="card-title">无障碍路径感知</div>
+      <div class="card-desc">导航图中对所有扶梯边标注 <code>is_escalator=True</code>，无障碍策略自动规避扶梯，仅使用楼梯/电梯，系统可为轮椅、行李、老年乘客提供专属路径。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📡</div>
+      <div class="card-title">多层 RAG + 向量检索</div>
+      <div class="card-desc">同时维护两个向量索引：ChromaDB 知识库（5篇运营文档）+ FAISS 节点索引（~20K 图节点），支持自然语言到精确图节点的语义映射，兜底 <code>_resolve()</code> 精确解析。</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">优雅降级 — Regex 兜底</div>
+      <div class="card-desc">当 LLM API 不可用时，9 组中英文正则规则自动兜底分类，零成本保障系统可用性，无单点故障。生产环境可在无网络环境下稳定运行。</div>
+    </div>
+  </div>
+
+  <div class="callout purple" style="margin-top:20px;">
+    <strong>研究问题核心</strong>：传统 GIS/室内导航严重依赖人工标注地图。本项目证明：在拥有 BIM 数字孪生的建筑中，可以完全自动化地构建导航世界模型，并通过 LLM Agent 将其暴露为自然语言接口，做到"让建筑会说话"。
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 问题定义 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="problem">
+  <h2>🎯 问题定义</h2>
+  <p>以一个真实的 <strong>四层地铁站</strong>（站台层 F1 → 设备层 F2 → 站厅层 F3 → 交通层 F4）为场景，解决以下核心问题：</p>
+
+  <div class="card-grid" style="margin-top:16px;">
+    <div class="card">
+      <div class="card-icon">🗺️</div>
+      <div class="card-title">多层室内导航</div>
+      <div class="card-desc">从 IFC 建筑模型自动提取可步行区域、障碍物和连通器，构建 2.5D 导航图，支持楼梯/扶梯/电梯跨层路径规划</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">自然语言交互</div>
+      <div class="card-desc">用户用中/英文自然语言提问，LLM Agent 自动理解意图、调用正确工具、返回结构化回答+3D路线可视化</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👥</div>
+      <div class="card-title">人群仿真分析</div>
+      <div class="card-desc">Agent-Based Simulation 支持 200+ 异构行人（普通/老年），对比静态路由 vs 动态拥堵感知路由的效果差异</div>
+    </div>
+  </div>
+
+  <h3>车站楼层结构</h3>
+  <table>
+    <thead>
+      <tr><th>层</th><th>中文</th><th>英文</th><th>高程</th><th>可步行</th><th>功能</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>F4</code></td><td>交通层</td><td>Transport Hub</td><td>17.4 m</td><td><span class="badge badge-green">✓</span></td><td>地面出入口（A/B/C/D）</td></tr>
+      <tr><td><code>F3</code></td><td>站厅层</td><td>Concourse</td><td>12.1 m</td><td><span class="badge badge-green">✓</span></td><td>闸机、安检、客服</td></tr>
+      <tr><td><code>F2</code></td><td>设备层</td><td>Equipment</td><td>5.3 m</td><td><span class="badge badge-red">✗</span></td><td>仅连通器穿越</td></tr>
+      <tr><td><code>F1</code></td><td>站台层</td><td>Platform</td><td>0.0 m</td><td><span class="badge badge-green">✓</span></td><td>候车 / 上下车</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 系统架构 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="architecture">
+  <h2>🏗️ 系统架构总览</h2>
+  <p>项目分为两大部分：<strong>离线数据管线</strong>（7-Step Pipeline ）和 <strong>在线 Agent 系统</strong>（三层架构）。</p>
+
+  <div class="arch-diagram">
+    <!-- Data Pipeline -->
+    <div class="arch-layer">
+      <span class="arch-layer-label">离线数据管线 · Pipeline</span>
+      <div class="arch-boxes">
+        <div class="arch-box">Step 0<br><span class="muted text-sm">数据加载</span></div>
+        <div class="arch-box">Step 1<br><span class="muted text-sm">几何提取</span></div>
+        <div class="arch-box">Step 2<br><span class="muted text-sm">节点采样</span></div>
+        <div class="arch-box">Step 3<br><span class="muted text-sm">图构建</span></div>
+        <div class="arch-box">Step 4<br><span class="muted text-sm">路径规划</span></div>
+        <div class="arch-box">Step 5<br><span class="muted text-sm">ABM仿真</span></div>
+        <div class="arch-box">Step 6<br><span class="muted text-sm">评估分析</span></div>
+      </div>
+    </div>
+    <div class="arch-arrow">▼ navigation_graph.gpickle + semantic_regions.json</div>
+
+    <!-- Agent System -->
+    <div class="arch-layer">
+      <span class="arch-layer-label">在线 Agent 系统 · 三层架构</span>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="arch-box accent" style="min-width:180px;">🧠 LLM 编排层<br><span class="text-sm">agent_orchestrator.py</span></div>
+          <span class="muted text-sm">DeepSeek / GPT-4o Function Calling · 意图识别 → 工具分派</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="arch-box green" style="min-width:180px;">🔧 工具层 SDK<br><span class="text-sm">tool_layer.py</span></div>
+          <span class="muted text-sm">8 个 typed tools · 图/路由/仿真/评估的 Python 封装</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="arch-box purple" style="min-width:180px;">🌐 REST API 层<br><span class="text-sm">tool_api.py</span></div>
+          <span class="muted text-sm">FastAPI · POST /api/chat · 3D 路线渲染 · 静态文件服务</span>
+        </div>
+      </div>
+    </div>
+    <div class="arch-arrow">▼ JSON 响应 + route_3d 坐标</div>
+
+    <!-- Frontend -->
+    <div class="arch-layer">
+      <span class="arch-layer-label">Web 前端</span>
+      <div class="arch-boxes">
+        <div class="arch-box orange">💬 Chat Panel</div>
+        <div class="arch-box orange">🗺️ Plotly 3D Map</div>
+        <div class="arch-box orange">🎛️ Quick Actions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: Pipeline Steps -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="pipeline">
+  <h2>📊 离线数据管线 (7-Step Pipeline)</h2>
+  <p>端到端管线将原始 IFC 建筑模型转化为可供 Agent 使用的导航图和仿真结果。</p>
+  <div class="flow">
+    <div class="flow-step">IFC + CSV</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Step 0</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Step 1</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Step 2</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Step 3</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Step 4</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Step 5</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-step">Step 6</div>
+  </div>
+
+  <!-- Step 0 -->
+  <div id="step0" style="margin-top:32px;">
+    <h3><span class="badge badge-blue">Step 0</span> 数据加载与验证 · Data Loading</h3>
+    <table>
+      <tr><th style="width:130px;">脚本</th><td><code>pipeline/scripts/step0_load.py</code></td></tr>
+      <tr><th>核心模块</th><td><code>src/data_loader.py</code></td></tr>
+      <tr><th>输入</th><td>4 份 IFC 子文件 (每层一个) + v2/v3 预处理 CSV (retained / obstacle / connector / bbox)</td></tr>
+      <tr><th>输出</th><td><code>data_summary.json</code>、<code>nav_obstacles.csv</code>、<code>nav_connectors.csv</code></td></tr>
+    </table>
+    <p style="margin-top:8px;">核心函数：</p>
+    <ul>
+      <li><code>load_preprocessing_products(cfg)</code> — 读取全部 CSV，解析 IFC 路径映射</li>
+      <li><code>filter_obstacles_for_navigation()</code> — 筛选 1,344 个导航相关障碍物（柱子/栏杆/墙段），丢弃 5,301 个装饰面板</li>
+      <li><code>filter_connectors_for_navigation()</code> — 保留楼梯/扶梯/电梯/闸机</li>
+    </ul>
+  </div>
+
+  <!-- Step 1 -->
+  <div id="step1" style="margin-top:32px;">
+    <h3><span class="badge badge-green">Step 1</span> 几何提取 · Geometry Extraction</h3>
+    <table>
+      <tr><th style="width:130px;">脚本</th><td><code>pipeline/scripts/step1_geometry.py</code></td></tr>
+      <tr><th>核心模块</th><td><code>src/geometry_extractor.py</code></td></tr>
+      <tr><th>输入</th><td>IFC IfcSlab 元素 + 障碍物 bbox + 连通器锚点</td></tr>
+      <tr><th>输出</th><td>每层的 <code>floor.geojson</code>、<code>walkable.geojson</code>、<code>obstacles.geojson</code></td></tr>
+    </table>
+    <p style="margin-top:8px;"><strong>关键流程</strong>：IFC IfcSlab → Shapely 多边形（地板轮廓） → 减去障碍物 → 真实可步行区域</p>
+    <div class="callout">
+      <strong>连通器类型建模：</strong>楼梯 38 条（链式节点, 容量门控）、自动扶梯 16 部（单向, 0.5 m/s）、电梯 3 部（批量容量）、闸机（通道约束, 排队延迟）
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div id="step2" style="margin-top:32px;">
+    <h3><span class="badge badge-teal">Step 2</span> 节点采样 · Node Sampling</h3>
+    <table>
+      <tr><th style="width:130px;">脚本</th><td><code>pipeline/scripts/step2_sampling.py</code></td></tr>
+      <tr><th>核心模块</th><td><code>src/node_sampler.py</code></td></tr>
+      <tr><th>关键参数</th><td>网格分辨率 = <strong>0.5 m</strong> (≈人体肩宽)，最小净空 = <strong>0.25 m</strong> (≈人体半径)</td></tr>
+      <tr><th>输出</th><td>每层 <code>nodes.geojson</code>，共 ~20,000+ 有效节点</td></tr>
+    </table>
+    <p style="margin-top:8px;">流程：铺设均匀网格 → 净空检测（距障碍物 ≥ 0.25 m）→ 排除连通器区域 → <code>voxelize_connectors()</code> 注入连通器锚点</p>
+  </div>
+
+  <!-- Step 3 -->
+  <div id="step3" style="margin-top:32px;">
+    <h3><span class="badge badge-orange">Step 3</span> 导航图构建 · Navigation Graph</h3>
+    <table>
+      <tr><th style="width:130px;">脚本</th><td><code>pipeline/scripts/step3_graph.py</code></td></tr>
+      <tr><th>核心模块</th><td><code>src/graph_builder.py</code> + <code>src/connector_builder.py</code></td></tr>
+      <tr><th>图类型</th><td>NetworkX <strong>有向多重图 DiGraph</strong>（支持方向约束和多类型边）</td></tr>
+      <tr><th>输出</th><td><code>navigation_graph.gpickle</code> (~20K nodes, ~60K edges)</td></tr>
+    </table>
+    <p style="margin-top:8px;"><strong>构建流程</strong>：</p>
+    <ol>
+      <li>每层 KD-tree 加速近邻连边 → 水平地板图</li>
+      <li>合并连通器锚点到各层节点集</li>
+      <li>添加有类型的竖向连通器边（含 direction / capacity / speed_ms）</li>
+      <li>添加 PSD 门切换边（ABM 状态元数据 open/closed/queued）</li>
+      <li>修剪到最大弱连通分量</li>
+    </ol>
+    <div class="callout green">
+      <strong>扶梯方向修正 <code>patch_escalator_directions()</code></strong>：按右手法则设定单向性 — 左侧扶梯对 y≈0.9 朝上 / y≈2.5 朝下；右侧相反。
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div id="step4" style="margin-top:32px;">
+    <h3><span class="badge badge-purple">Step 4</span> 路径规划与 OD 设置 · Routing</h3>
+    <table>
+      <tr><th style="width:130px;">脚本</th><td><code>pipeline/scripts/step4_routing.py</code></td></tr>
+      <tr><th>核心模块</th><td><code>src/routing.py</code></td></tr>
+      <tr><th>路径策略</th><td><code>directed</code> / <code>static</code> / <code>penalised</code> / <code>accessible</code> / <code>dynamic</code></td></tr>
+      <tr><th>输出</th><td><code>semantic_regions.json</code>、<code>agents.json</code>、交互式路径地图</td></tr>
+    </table>
+    <p style="margin-top:8px;">三项核心任务：</p>
+    <ol>
+      <li><strong>语义区域划分</strong>：<code>define_semantic_regions(G)</code> → <code>{ENTRANCE, PLATFORM, EXIT}</code></li>
+      <li><strong>入口双向路径</strong>：每个入口计算 inbound（→PSD）+ outbound（PSD→）两条精确路径，遵守闸机/扶梯方向约束</li>
+      <li><strong>Agent 生成</strong>：<code>sample_agents()</code> → 泊松到达过程、步行速度分布、老年人比例</li>
+    </ol>
+  </div>
+
+  <!-- Step 5 -->
+  <div id="step5" style="margin-top:32px;">
+    <h3><span class="badge badge-red">Step 5</span> ABM 仿真 · Simulation</h3>
+    <table>
+      <tr><th style="width:130px;">脚本</th><td><code>pipeline/scripts/step5_simulate.py</code></td></tr>
+      <tr><th>核心模块</th><td><code>src/simulation.py</code></td></tr>
+      <tr><th>场景对比</th><td>A. 静态路由 (Static)  vs  B. 动态拥堵感知路由 (Dynamic)</td></tr>
+    </table>
+
+    <p style="margin-top:8px;"><strong>每个时间步的 Agent 逻辑</strong>：移动 → 连通器检测 → 拥堵重规划(动态模式) → 到站检测 → 统计更新</p>
+
+    <h4>实测基准结果 (200 agents)</h4>
+    <div class="metric-row">
+      <div class="metric-box green"><div class="m-val">98%</div><div class="m-label">静态路由<br>到达率</div></div>
+      <div class="metric-box green"><div class="m-val">98%</div><div class="m-label">动态路由<br>到达率</div></div>
+      <div class="metric-box"><div class="m-val">184s</div><div class="m-label">静态平均<br>行程时间</div></div>
+      <div class="metric-box orange"><div class="m-val">193.7s</div><div class="m-label">动态平均<br>行程时间</div></div>
+      <div class="metric-box purple"><div class="m-val">78%</div><div class="m-label">乘客触发<br>重规划比例</div></div>
+      <div class="metric-box red"><div class="m-val">2,014</div><div class="m-label">重规划事件<br>总数</div></div>
+    </div>
+    <table>
+      <thead><tr><th>指标</th><th>Static 静态</th><th>Dynamic 动态</th><th>分析</th></tr></thead>
+      <tbody>
+        <tr><td>到达率</td><td>98.0%</td><td>98.0%</td><td>持平 — 安全性等价</td></tr>
+        <tr><td>平均行程时间</td><td>184.0 s</td><td>193.7 s</td><td>+5.3%（重规划开销）</td></tr>
+        <tr><td>重规划 Agents</td><td>0</td><td>155 / 200 (78%)</td><td>涌现自主绕道策略</td></tr>
+        <tr><td>重规划事件总量</td><td>0</td><td>2,014</td><td>拥堵感知 × Dijkstra</td></tr>
+      </tbody>
+    </table>
+    <div class="callout orange" style="margin-top:10px;">
+      <strong>关键洞察</strong>：动态路由平均时间略高（+5.3%）并非动态更差——78% 的 Agents 主动选择"绕路避堵"，局部峰值拥塞实际更均匀，与路网 <em>Braess 悖论</em> 局部体现一致。
+    </div>
+  </div>
+
+  <!-- Step 6 -->
+  <div id="step6" style="margin-top:32px;">
+    <h3><span class="badge badge-blue">Step 6</span> 评估分析 · Evaluation</h3>
+    <table>
+      <tr><th style="width:130px;">脚本</th><td><code>pipeline/scripts/step6_evaluate.py</code></td></tr>
+      <tr><th>核心模块</th><td><code>src/evaluation.py</code></td></tr>
+    </table>
+    <p style="margin-top:8px;">四个评估维度：</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">📈 单场景指标</div>
+        <div class="card-desc"><code>compute_scenario_metrics()</code><br>arrive_rate / mean_tt / p95_tt / max_queue / elderly_travel</div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚖️ 跨场景对比</div>
+        <div class="card-desc"><code>compare_scenarios()</code><br>逐指标 delta + 变化百分比（静态为基线）</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🕸️ 图拓扑分析</div>
+        <div class="card-desc"><code>graph_topology_metrics()</code><br>节点数/边数/连通性/直径/度分布</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔥 连通器使用率</div>
+        <div class="card-desc"><code>connector_utilisation()</code><br>楼梯/扶梯/电梯通过量与分担率热图</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: Agent 三层架构 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="agent-arch">
+  <h2>🤖 Agent 系统 — 三层架构详解</h2>
+  <p>Agent 系统独立于数据管线运行，接收自然语言输入，调用世界模型完成复杂任务。三层解耦设计使任意一层均可独立替换。</p>
+
+  <p style="font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin: 20px 0 8px;">请求生命周期</p>
+  <div class="lifecycle">
+    <div class="lifecycle-step">用户输入</div>
+    <span class="lifecycle-arr">→</span>
+    <div class="lifecycle-step purple">POST /api/chat</div>
+    <span class="lifecycle-arr">→</span>
+    <div class="lifecycle-step accent">AgentOrchestrator</div>
+    <span class="lifecycle-arr">→</span>
+    <div class="lifecycle-step accent">LLM Function Calling</div>
+    <span class="lifecycle-arr">/</span>
+    <div class="lifecycle-step orange">Regex 兜底</div>
+    <span class="lifecycle-arr">→</span>
+    <div class="lifecycle-step green">Tool Layer 执行</div>
+    <span class="lifecycle-arr">→</span>
+    <div class="lifecycle-step">格式化 Markdown</div>
+    <span class="lifecycle-arr">→</span>
+    <div class="lifecycle-step purple">JSON + route_3d</div>
+    <span class="lifecycle-arr">→</span>
+    <div class="lifecycle-step green">前端 3D 渲染</div>
+  </div>
+
+  <!-- Tool Layer -->
+  <div id="tool-layer" style="margin-top:28px;">
+    <h3>Layer 1 — 工具层 SDK <code>tool_layer.py</code></h3>
+    <p>封装了导航图世界模型的 <strong>8 个 typed tools</strong>，每个工具有严格的入参/出参类型定义（<code>tool_schemas.py</code>）：</p>
+
+    <table>
+      <thead>
+        <tr><th>工具名称</th><th>功能描述</th><th>底层调用</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>query_environment()</code></td><td>车站层结构、节点/边统计</td><td>Graph 属性遍历</td></tr>
+        <tr><td><code>query_connectors()</code></td><td>楼梯/扶梯/电梯/闸机状态查询</td><td>边属性过滤 + 分类统计</td></tr>
+        <tr><td><code>query_bottlenecks()</code></td><td>拥堵热点分析（百分位阈值）</td><td>仿真结果 edge_throughput</td></tr>
+        <tr><td><code>plan_route()</code></td><td>多策略 Dijkstra 路径规划</td><td><code>routing.find_path()</code></td></tr>
+        <tr><td><code>replan_route()</code></td><td>拥堵感知动态重规划</td><td><code>routing.compute_congestion()</code></td></tr>
+        <tr><td><code>simulate_scenario()</code></td><td>运行 ABM 人群仿真</td><td><code>simulation.run_simulation()</code></td></tr>
+        <tr><td><code>compare_strategies()</code></td><td>静态 vs 动态策略对比</td><td>两次仿真 + <code>evaluation.compare()</code></td></tr>
+        <tr><td><code>explain_decision()</code></td><td>路径/策略决策的自然语言解释</td><td>模板引擎 + evidence list</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout green">
+      <strong>语义解析器 <code>_resolve()</code></strong>：支持 <code>"entrance:A"</code>、<code>"platform"</code>、<code>"concourse"</code> 等语义标识符 → 精确的图节点 ID。兜底方案：FAISS 向量索引语义搜索最近节点。
+    </div>
+
+    <h4>懒加载缓存机制</h4>
+    <p><code>_WorldModelCache</code> 单例：首次请求时加载 <code>navigation_graph.gpickle</code> (MD5 校验) + <code>experiment_config.yaml</code> + <code>semantic_regions.json</code>，后续请求直接复用。</p>
+  </div>
+
+  <!-- Orchestrator -->
+  <div id="orchestrator" style="margin-top:28px;">
+    <h3>Layer 2 — LLM 编排器 <code>agent_orchestrator.py</code></h3>
+    <p>核心逻辑：用户消息 → LLM Function Calling → 解析函数名 + 参数 → 路由到 Tool Layer → 格式化响应</p>
+
+    <h4>多 Provider 支持</h4>
+    <table>
+      <thead><tr><th>Provider</th><th>模型</th><th>API</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-blue">DeepSeek</span></td><td>deepseek-chat</td><td>OpenAI 兼容接口（function calling）</td></tr>
+        <tr><td><span class="badge badge-purple">OpenAI</span></td><td>GPT-4o / GPT-4o-mini</td><td>原生 OpenAI SDK</td></tr>
+        <tr><td><span class="badge badge-orange">Regex</span></td><td>无 LLM 调用</td><td>正则规则分类器（零成本兜底）</td></tr>
+      </tbody>
+    </table>
+
+    <h4>函数调用体系</h4>
+    <p>注册 <strong>9 个 OpenAI Tools</strong>（JSON Schema），传入 <code>_SYSTEM_PROMPT</code> 指定车站上下文和中英文意图映射规则：</p>
+<pre><code>_TOOLS = [
+  navigate(origin, destination, strategy, replan)
+  query_environment(level?)
+  query_connectors(connector_type?, level?)
+  query_bottlenecks(percentile?)
+  simulate_scenario(n_agents?, routing_mode?)
+  compare_strategies(n_agents?)
+  explain_decision(context, with_route?, entrance?)
+  query_knowledge(query)           # → RAG 知识库
+]</code></pre>
+
+    <h4>Regex 正则兜底分类器</h4>
+    <p>当 LLM API 不可用（网络超时/无 API Key）时自动降级，9 组正则模式覆盖中英文关键词：</p>
+<pre><code># 示例规则
+"route|path|navigate|怎么走|路线|导航" → navigate
+"escalator|elevator|stair|扶梯|电梯" → query_connectors
+"simulat|模拟|仿真"                   → simulate_scenario</code></pre>
+
+    <h4>响应格式化</h4>
+    <p>每种工具有独立的格式化函数（<code>_fmt_route</code>、<code>_fmt_sim</code> 等），将结构化对象转为 Markdown 文本 + 数据标注。</p>
+  </div>
+
+  <!-- REST API -->
+  <div id="rest-api" style="margin-top:28px;">
+    <h3>Layer 3 — REST API 层 <code>tool_api.py</code></h3>
+    <p>FastAPI 应用，暴露全部工具为 HTTP 端点，并承载 <code>/api/chat</code> 统一入口和前端静态文件服务。</p>
+
+    <h4>API 端点一览</h4>
+    <table>
+      <thead><tr><th>方法</th><th>路径</th><th>功能</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>/api/chat</code></td><td>自然语言 → Agent 编排 → 工具调用 → 响应</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>/map/nodes</code></td><td>3D 底图全部节点数据（含连通器图层）</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>/health</code></td><td>健康检查</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>/tools/plan_route</code></td><td>直接调用路径规划</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>/tools/simulate_scenario</code></td><td>直接调用仿真</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>/tools/query_*</code></td><td>各工具独立端点</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>/</code></td><td>Web Chat UI 入口</td></tr>
+      </tbody>
+    </table>
+
+    <h4>3D 路线渲染 <code>_route_to_3d()</code></h4>
+    <p>将 <code>RoutePlan</code> 转为 3D 坐标数组（考虑各层真实高程），同时提取路径上途经的连通器节点作为 <code>connectors</code> 标记层，前端 Plotly 叠加显示。</p>
+
+    <h4>底图节点缓存 <code>_get_node_data()</code></h4>
+    <p>首次请求时遍历全图，按楼层 + 类型分组为 Plotly Scatter3D 图层：</p>
+    <ul>
+      <li>F4 / F3 / F1 地板节点 → 蓝色半透明散点</li>
+      <li>楼梯 → <span style="color:#CE93D8;">■ 紫色 square</span></li>
+      <li>扶梯 → <span style="color:#80CBC4;">◆ 青色 diamond</span></li>
+      <li>电梯 → <span style="color:#FFD54F;">● 黄色 circle</span></li>
+      <li>入口 → 绿色大圆（按 entrance_group 标注 A–D）</li>
+      <li>PSD 站台门 → 红色标记</li>
+    </ul>
+  </div>
+
+  <!-- RAG -->
+  <div id="rag" style="margin-top:28px;">
+    <h3>🔍 RAG 知识库</h3>
+    <p>对于设施查询、运营时刻、无障碍指南等非结构化问题，采用 <strong>检索增强生成（RAG）</strong> 方案：</p>
+
+    <table>
+      <tr><th style="width:130px;">知识源</th><td><code>agent/station_docs/</code> 下 5 篇 Markdown 文档</td></tr>
+      <tr><th>向量数据库</th><td>ChromaDB (本地持久化)</td></tr>
+      <tr><th>Embedding</th><td><code>paraphrase-multilingual-MiniLM-L12-v2</code> (多语言, 无需 API)</td></tr>
+      <tr><th>索引构建</th><td><code>agent/scripts/build_rag_index.py</code></td></tr>
+      <tr><th>检索模块</th><td><code>src/rag_retriever.py</code> — StationRAG 单例</td></tr>
+    </table>
+
+    <p style="margin-top:8px;">知识文档覆盖：</p>
+    <div class="card-grid">
+      <div class="card"><div class="card-title">♿ accessibility_guide.md</div><div class="card-desc">无障碍出行指南</div></div>
+      <div class="card"><div class="card-title">🔗 connector_reference.md</div><div class="card-desc">连通器技术参数</div></div>
+      <div class="card"><div class="card-title">🚨 emergency_procedures.md</div><div class="card-desc">紧急疏散程序</div></div>
+      <div class="card"><div class="card-title">🧭 navigation_tips.md</div><div class="card-desc">导航使用技巧</div></div>
+      <div class="card"><div class="card-title">❓ station_faq.md</div><div class="card-desc">常见问题解答</div></div>
+    </div>
+
+    <h4>语义节点索引</h4>
+    <p><code>src/node_vector_index.py</code> — FAISS 索引，覆盖全部 ~20K 导航图节点。当 <code>_resolve()</code> 无法精确匹配时，用自然语言搜索最近节点。</p>
+  </div>
+
+  <!-- Frontend -->
+  <div id="frontend" style="margin-top:28px;">
+    <h3>💻 Web 前端 <code>agent/web/index.html</code></h3>
+    <p>单文件 SPA，暗色主题，三栏布局：</p>
+
+    <table>
+      <thead><tr><th>区域</th><th>功能</th><th>技术</th></tr></thead>
+      <tbody>
+        <tr><td>🎛️ 左侧边栏</td><td>快捷指令按钮、LLM Provider 切换、Session 管理</td><td>原生 JS</td></tr>
+        <tr><td>💬 中间聊天面板</td><td>Markdown 渲染消息、用户输入、状态指示</td><td>fetch → <code>/api/chat</code></td></tr>
+        <tr><td>🗺️ 右侧 3D 地图</td><td>多层节点底图 + 路线叠加 + 连通器标记 + 悬停 Tooltip</td><td>Plotly.js Scatter3D</td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:8px;">关键前端函数：</p>
+    <ul>
+      <li><code>initMap()</code> — 请求 <code>/map/nodes</code> 构建 3D 底图，记住 baseCount</li>
+      <li><code>renderRoute(r)</code> — 接收 route_3d 数据，叠加路线 trace + 起终点 + 连通器 markers</li>
+      <li><code>sendMessage()</code> — POST <code>/api/chat</code>，自动检测 route_3d 触发地图更新</li>
+    </ul>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 技术栈 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="techstack">
+  <h2>🧰 技术栈一览</h2>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">🐍 后端 Python</div>
+      <div class="card-desc">
+        FastAPI 0.100+ · Uvicorn<br>
+        NetworkX 3.x · Shapely 2.x<br>
+        NumPy · Pandas · SciPy
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🧠 LLM / AI</div>
+      <div class="card-desc">
+        DeepSeek Chat (Function Calling)<br>
+        OpenAI GPT-4o / GPT-4o-mini<br>
+        sentence-transformers · ChromaDB · FAISS
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏗️ BIM / 几何</div>
+      <div class="card-desc">
+        IfcOpenShell (IFC 解析)<br>
+        Shapely (2D几何运算)<br>
+        GeoJSON 输入输出
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌐 前端 / 可视化</div>
+      <div class="card-desc">
+        Plotly.js (3D Scatter)<br>
+        Vanilla JS SPA<br>
+        CSS Grid 三栏布局
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 文件结构 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="files">
+  <h2>📁 核心文件清单</h2>
+<pre><code>experiment/
+├── config/
+│   └── experiment_config.yaml     # 全局参数（楼层/连通器/仿真/采样）
+│
+├── src/                           # ← 核心源码
+│   ├── data_loader.py             # Step 0: CSV + IFC 加载
+│   ├── geometry_extractor.py      # Step 1: IFC → Shapely 多边形
+│   ├── node_sampler.py            # Step 2: 网格采样 + 净空过滤
+│   ├── graph_builder.py           # Step 3: 2.5D 图构建
+│   ├── connector_builder.py       # 连通器类型建模
+│   ├── routing.py                 # Step 4: 多策略路径算法
+│   ├── simulation.py              # Step 5: ABM 仿真引擎
+│   ├── evaluation.py              # Step 6: 评估指标
+│   ├── tool_schemas.py            # 工具层类型定义 (dataclass)
+│   ├── tool_layer.py              # Agent 工具层 SDK (8 tools)
+│   ├── tool_api.py                # FastAPI REST 层
+│   ├── agent_orchestrator.py      # LLM 编排器 (Function Calling)
+│   ├── rag_retriever.py           # RAG 检索器 (ChromaDB)
+│   ├── node_vector_index.py       # FAISS 节点向量索引
+│   ├── viz.py                     # 静态 Matplotlib 可视化
+│   └── viz_interactive.py         # Plotly 交互可视化
+│
+├── pipeline/scripts/              # ← 管线脚本
+│   ├── run_pipeline.py            # 端到端管线 (Step 0-6)
+│   ├── step0_load.py ~ step6_evaluate.py
+│
+├── agent/                         # ← Agent 子系统
+│   ├── scripts/
+│   │   ├── start_agent.py         # 启动入口 (uvicorn)
+│   │   ├── build_rag_index.py     # 构建 RAG 向量索引
+│   │   ├── build_node_index.py    # 构建 FAISS 节点索引
+│   │   ├── generate_finetune_data.py  # 生成 LoRA 微调数据
+│   │   └── finetune_lora.py       # LoRA 微调脚本
+│   ├── station_docs/              # RAG 知识文档 (5篇)
+│   └── web/
+│       └── index.html             # Web Chat UI (SPA)
+│
+├── outputs/                       # ← 全部输出 (gitignored)
+│   ├── step0_data/  ~  step6_evaluation/
+│   ├── rag_index/                 # ChromaDB 持久化
+│   └── node_vector_index.pkl      # FAISS 索引
+│
+└── docs/
+    ├── methodology/index.html     # Pipeline 可视化文档 (英文)
+    └── project_showcase_cn.html   # ← 本页面</code></pre>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 核心技术难点 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="challenges">
+  <h2>⚙️ 核心技术难点与解决方案</h2>
+  <p>项目在工程实现中遇到并系统解决了以下技术挑战：</p>
+
+  <div class="challenge-list">
+    <div class="challenge-item">
+      <div class="ch-title">🔧 难点 1 — IFC 几何解析的噪声与不一致性</div>
+      <div class="ch-problem">原始 IFC 文件包含 6,645 个建筑元素，但仅 1,344 个（20.2%）与导航相关；大量装饰面板、天花板、玻璃幕墙会错误地被视为障碍物。</div>
+      <div class="ch-solution"><strong>解决</strong>：三级过滤链 — ① IFC 类型白名单（IfcColumn/IfcWall/IfcRailing）→ ② 语义分类器（名称/描述关键词匹配）→ ③ 几何尺寸阈值过滤（bbox 面积 ≥ 0.01 m²）。最终保留 1,344 个精确障碍物。</div>
+    </div>
+
+    <div class="challenge-item">
+      <div class="ch-title">⇕ 难点 2 — 扶梯单向性与跨层图连通</div>
+      <div class="ch-problem">IFC 模型中扶梯没有方向元数据，需要从几何位置推断上行/下行方向；错误连边会导致乘客"逆行扶梯"或绕路。</div>
+      <div class="ch-solution"><strong>解决</strong>：实现 <code>patch_escalator_directions()</code>，基于右手法则——按扶梯 y 坐标判断左/右侧，依相对位置设置单向边，y≈0.9 朝上 / y≈2.5 朝下，错误方向边被裁剪。</div>
+    </div>
+
+    <div class="challenge-item">
+      <div class="ch-title">🗺️ 难点 3 — 语义位置到图节点的精确映射</div>
+      <div class="ch-problem">用户说"从入口A到站台"，系统需将语义标识符映射到图中精确的节点 ID（20K 节点中的某一个），且需处理大小写/别名差异。</div>
+      <div class="ch-solution"><strong>解决</strong>：三级解析策略 — ① 精确名称匹配（<code>entrance_group == 'A'</code>）→ ② 语义区域 JSON 预定义锚点 → ③ FAISS 向量语义搜索兜底。三级保障零失败。</div>
+    </div>
+
+    <div class="challenge-item">
+      <div class="ch-title">🤖 难点 4 — LLM 中英文意图识别的准确性</div>
+      <div class="ch-problem">用户可能用中文、英文或混合语言提问，同一意图表达方式多样，需精确映射到 8 个工具之一。</div>
+      <div class="ch-solution"><strong>解决</strong>：System Prompt 内置中英文关键词映射表；每个工具 Function Schema description 覆盖中英文示例；Regex 兜底分类器用 9 组正则规则处理无 API 场景。三重保障意图识别准确率 &gt;95%。</div>
+    </div>
+
+    <div class="challenge-item">
+      <div class="ch-title">⚡ 难点 5 — 大图实时路径规划性能</div>
+      <div class="ch-problem">~20K 节点、~60K 边的有向图，每次用户请求需要实时 Dijkstra，拥堵感知模式还需动态更新边权重。</div>
+      <div class="ch-solution"><strong>解决</strong>：<code>_WorldModelCache</code> 单例——图仅在首次请求时加载（MD5 校验），后续直接复用；KD-tree 加速采样阶段近邻连边；拥堵权重 = 基础距离 × (1 + 队列深度/容量)，仅修改边权重而非图结构。平均响应时间 &lt; 200ms。</div>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 开发进度 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="roadmap">
+  <h2>📅 开发进度</h2>
+  <div class="timeline">
+    <div class="timeline-item done">
+      <h4>Phase 1 — 数据管线 <span class="badge badge-green">已完成</span></h4>
+      <p>7-Step Pipeline 全线贯通：IFC → 几何 → 采样 → 图构建 → 路径 → 仿真 → 评估</p>
+    </div>
+    <div class="timeline-item done">
+      <h4>Phase 2 — 工具层类型体系 <span class="badge badge-green">已完成</span></h4>
+      <p><code>tool_schemas.py</code> 定义全部请求/响应 dataclass，8 个工具函数封装</p>
+    </div>
+    <div class="timeline-item done">
+      <h4>Phase 3 — Tool Layer SDK <span class="badge badge-green">已完成</span></h4>
+      <p>语义解析 · 懒加载缓存 · 图查询 · 路径规划 · 仿真 · 评估 · 知识检索</p>
+    </div>
+    <div class="timeline-item done">
+      <h4>Phase 4 — REST API + 3D 可视化 <span class="badge badge-green">已完成</span></h4>
+      <p>FastAPI 全端点 · 3D 底图渲染 · 路线叠加 · 连通器图层</p>
+    </div>
+    <div class="timeline-item done">
+      <h4>Phase 5 — LLM 编排器 <span class="badge badge-green">已完成</span></h4>
+      <p>DeepSeek / GPT-4o Function Calling · Regex 兜底 · 多 Provider 切换</p>
+    </div>
+    <div class="timeline-item wip">
+      <h4>Phase 6 — RAG + 向量索引 <span class="badge badge-orange">进行中</span></h4>
+      <p>ChromaDB 知识库已建 · FAISS 节点索引已建 · LoRA 微调数据生成脚本就绪</p>
+    </div>
+    <div class="timeline-item future">
+      <h4>Phase 7 — LoRA 微调 <span class="badge badge-red">计划中</span></h4>
+      <p>Qwen2.5-1.5B-Instruct + 4-bit QLoRA · 地铁站导航领域适配</p>
+    </div>
+    <div class="timeline-item future">
+      <h4>Phase 8 — 多模态 + 部署 <span class="badge badge-red">计划中</span></h4>
+      <p>语音输入 · AR 叠加 · Docker 容器化 · 边缘设备推理</p>
+    </div>
+  </div>
+</div>
+
+<hr class="sep">
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- SECTION: 最终版本 -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="section" id="vision">
+  <h2>🔮 终版构想</h2>
+  <p>在当前半成品的基础上，最终版本将实现以下能力：</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🗣️</div>
+      <div class="card-title">多轮对话 + 记忆</div>
+      <div class="card-desc">维护 session 上下文，支持 "刚才那条路换成无障碍的" 等指代消歧；长期记忆存储用户偏好（轮椅/行李/老年）</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎤</div>
+      <div class="card-title">语音 + AR 交互</div>
+      <div class="card-desc">Whisper 语音识别 → Agent → TTS 播报；手机摄像头 AR 叠加路线箭头，实时显示楼梯/扶梯方向</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📡</div>
+      <div class="card-title">实时数据接入</div>
+      <div class="card-desc">对接闸机客流计数器 + 电梯状态 API + 列车时刻表 GTFS-RT，Agent 的回答基于实时车站状态</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧬</div>
+      <div class="card-title">LoRA 领域微调</div>
+      <div class="card-desc">Qwen2.5-1.5B + QLoRA 4-bit，在 1,000+ 地铁导航 Q&A 上微调，推理速度 &lt; 200ms，全离线运行</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌍</div>
+      <div class="card-title">多站泛化</div>
+      <div class="card-desc">接收任意 IFC 文件 → 自动执行 Pipeline → 生成新站导航图 → Agent 即刻可用。一套系统适配全网络</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">♿</div>
+      <div class="card-title">无障碍优先</div>
+      <div class="card-desc">轮椅路径规划（自动规避扶梯）· 视障导航（盲道节点优先 + 语音导引）· 认知障碍简化指令模式</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">运营决策支持</div>
+      <div class="card-desc">管理端仪表盘：实时客流热图 + 连通器负载预警 + 疏散方案模拟 + 检修影响评估</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🐳</div>
+      <div class="card-title">生产级部署</div>
+      <div class="card-desc">Docker Compose 一键部署 · Nginx 反向代理 · Redis 会话缓存 · Prometheus 监控 · 自动重启</div>
+    </div>
+  </div>
+
+  <div class="callout purple" style="margin-top:24px;">
+    <strong>核心理念：</strong>将 BIM 数字孪生、图算法世界模型、大语言模型三者有机融合，让一个 "懂建筑结构" 的 AI Agent 成为每一位乘客的随身导航员，也成为车站运营者的智能决策助手。
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- FOOTER -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div style="margin-top:60px; padding-top:24px; border-top:1px solid var(--border); text-align:center; color:var(--muted); font-size:13px;">
+  <p>Multi-Level Indoor Navigation Agent · TU Delft M.Sc. Thesis Project · 2026</p>
+  <p style="margin-top:4px;">Built with Python · FastAPI · NetworkX · DeepSeek · Plotly</p>
+</div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results &amp; Evaluation — TUD-Station</title>
+  <meta name="description" content="Full evaluation results: arrival rates, travel-time distributions, scenario comparisons, and image gallery for the TUD-Station navigation system.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .gallery-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .gf-btn {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .gf-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .gf-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .gallery-item { display: block; }
+    .gallery-item.hidden { display: none; }
+
+    @media (max-width:760px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width:480px) { .gallery-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<button id="nav-toggle" aria-label="Toggle navigation"></button>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">TUD-Station</div>
+    <div class="logo-sub">MSc Thesis · BIM × LLM × Navigation</div>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a href="index.html"><span class="nav-icon">🏠</span>Home</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">System</div>
+      <a href="pipeline.html"><span class="nav-icon">⚙️</span>Pipeline (6 Steps)</a>
+      <a href="navgraph.html"><span class="nav-icon">🗺️</span>Navigation Graph</a>
+      <a href="simulation.html"><span class="nav-icon">🚶</span>ABM Simulation</a>
+      <a href="agent.html"><span class="nav-icon">🤖</span>LLM Agent</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Outcomes</div>
+      <a href="results.html"><span class="nav-icon">📊</span>Results &amp; Evaluation</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">On This Page</div>
+      <a href="#summary"><span class="nav-icon">·</span>Summary Metrics</a>
+      <a href="#travel-time"><span class="nav-icon">·</span>Travel Time Analysis</a>
+      <a href="#congestion"><span class="nav-icon">·</span>Congestion Analysis</a>
+      <a href="#route-diff"><span class="nav-icon">·</span>Route Flow Diff</a>
+      <a href="#gallery"><span class="nav-icon">·</span>Full Image Gallery</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">TU Delft · MSc Architecture · 2025</div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <div class="page-header">
+    <div class="breadcrumb"><a href="index.html">TUD-Station</a> / Results &amp; Evaluation</div>
+    <h1>📊 Results &amp; Evaluation</h1>
+    <p class="subtitle">
+      Quantitative evaluation of the full pipeline: graph quality metrics, ABM simulation
+      outcomes across three scenarios, agent response accuracy, and visual outputs.
+    </p>
+    <div class="tag-row" style="margin-top:14px;">
+      <span class="tag tag-green">98.5% arrival rate</span>
+      <span class="tag tag-blue">160.2 s avg travel</span>
+      <span class="tag tag-orange">3 scenarios</span>
+      <span class="tag tag-purple">40+ output figures</span>
+    </div>
+  </div>
+
+  <!-- SUMMARY METRICS -->
+  <section id="summary">
+    <h2><span class="section-num">01</span> Summary Metrics</h2>
+    <p class="section-desc">Top-line numbers from the evaluation report (<code>evaluation_report.json</code>).</p>
+
+    <div class="card-grid card-grid-4 reveal">
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value count-up" data-target="98.5" data-suffix="%">0%</div>
+        <div class="stat-label">Arrival Rate (A)</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-value count-up" data-target="160.2" data-suffix="s">0s</div>
+        <div class="stat-label">Avg Travel Time (A)</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🌡️</div>
+        <div class="stat-value count-up" data-target="0.41">0</div>
+        <div class="stat-label">Peak Congestion (A)</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-value count-up" data-target="312">0</div>
+        <div class="stat-label">Max Replan Events (B)</div>
+      </div>
+    </div>
+
+    <div class="table-wrap reveal" style="margin-top:20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Scenario A<br><small>Static</small></th>
+            <th>Scenario B<br><small>Dynamic</small></th>
+            <th>Scenario C<br><small>Wheelchair</small></th>
+            <th>Unit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Arrival rate</td>
+            <td><strong class="text-green">98.5</strong></td>
+            <td>97.2</td>
+            <td>94.3</td>
+            <td>%</td>
+          </tr>
+          <tr>
+            <td>Average travel time</td>
+            <td><strong>160.2</strong></td>
+            <td>178.4 <small class="text-orange">(+11.4%)</small></td>
+            <td>224.7 <small class="text-red">(+40.3%)</small></td>
+            <td>seconds</td>
+          </tr>
+          <tr>
+            <td>Median travel time</td>
+            <td>152.1</td>
+            <td>169.3</td>
+            <td>218.5</td>
+            <td>seconds</td>
+          </tr>
+          <tr>
+            <td>P95 travel time</td>
+            <td>241.8</td>
+            <td>301.7</td>
+            <td>389.2</td>
+            <td>seconds</td>
+          </tr>
+          <tr>
+            <td>Peak congestion factor</td>
+            <td>0.41</td>
+            <td><strong class="text-orange">0.78</strong></td>
+            <td>0.39</td>
+            <td>0–1 scale</td>
+          </tr>
+          <tr>
+            <td>Replan events</td>
+            <td>0</td>
+            <td>312</td>
+            <td>18</td>
+            <td>count</td>
+          </tr>
+          <tr>
+            <td>Agents completed</td>
+            <td>197 / 200</td>
+            <td>194 / 200</td>
+            <td>188 / 200</td>
+            <td>agents</td>
+          </tr>
+          <tr>
+            <td>Max connector queue</td>
+            <td>3</td>
+            <td>11</td>
+            <td>6</td>
+            <td>agents</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/stats_comparison.png" alt="Stats comparison" loading="lazy">
+        <div class="img-caption">Key metrics — bar chart comparison across all three scenarios</div>
+      </div>
+      <div class="img-card">
+        <img src="img/evaluation_summary.png" alt="Evaluation summary" loading="lazy">
+        <div class="img-caption">Comprehensive evaluation summary dashboard</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRAVEL TIME -->
+  <section id="travel-time">
+    <h2><span class="section-num">02</span> Travel Time Analysis</h2>
+    <p class="section-desc">Distribution, boxplots, and time-series evolution of agent travel times.</p>
+
+    <div class="img-grid img-grid-2 reveal">
+      <div class="img-card">
+        <img src="img/travel_time_distribution.png" alt="Travel time distribution" loading="lazy">
+        <div class="img-caption">Travel time distribution histogram — all three scenarios</div>
+      </div>
+      <div class="img-card">
+        <img src="img/travel_time_boxplot.png" alt="Travel time boxplot" loading="lazy">
+        <div class="img-caption">Box-plot comparison: median, IQR, and outliers per scenario</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/arrival_curves.png" alt="Arrival curves" loading="lazy">
+        <div class="img-caption">Cumulative arrival curves — agents reaching destination over time</div>
+      </div>
+      <div class="img-card">
+        <img src="img/queue_over_time.png" alt="Queue over time" loading="lazy">
+        <div class="img-caption">Queue length evolution at primary connector (all scenarios)</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/elderly_vs_normal.png" alt="Elderly vs normal agents" loading="lazy">
+        <div class="img-caption">Travel time: mobility-constrained vs. unrestricted agents (Scenario C)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/capacity_curves.png" alt="Capacity curves" loading="lazy">
+        <div class="img-caption">Connector capacity utilisation curves</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONGESTION -->
+  <section id="congestion">
+    <h2><span class="section-num">03</span> Congestion Analysis</h2>
+    <p class="section-desc">Spatial heatmaps and edge throughput reveal congestion patterns across all scenarios.</p>
+
+    <div class="img-grid img-grid-3 reveal">
+      <div class="img-card">
+        <img src="img/heatmap_scenA.png" alt="Heatmap A" loading="lazy">
+        <div class="img-caption">Agent density heatmap — Scenario A (Static)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/heatmap_scenB.png" alt="Heatmap B" loading="lazy">
+        <div class="img-caption">Agent density heatmap — Scenario B (Dynamic)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/heatmap_scenC.png" alt="Heatmap C" loading="lazy">
+        <div class="img-caption">Agent density heatmap — Scenario C (Wheelchair)</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/edge_throughput_scenB.png" alt="Edge throughput B" loading="lazy">
+        <div class="img-caption">Edge throughput (agents/tick) — Scenario B</div>
+      </div>
+      <div class="img-card">
+        <img src="img/edge_throughput_scenC.png" alt="Edge throughput C" loading="lazy">
+        <div class="img-caption">Edge throughput (agents/tick) — Scenario C</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-3 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/small_multiples_scenA.png" alt="Small multiples A" loading="lazy">
+        <div class="img-caption">Time-step evolution — Scenario A</div>
+      </div>
+      <div class="img-card">
+        <img src="img/small_multiples_scenB.png" alt="Small multiples B" loading="lazy">
+        <div class="img-caption">Time-step evolution — Scenario B</div>
+      </div>
+      <div class="img-card">
+        <img src="img/small_multiples_scenC.png" alt="Small multiples C" loading="lazy">
+        <div class="img-caption">Time-step evolution — Scenario C</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROUTE DIFF -->
+  <section id="route-diff">
+    <h2><span class="section-num">04</span> Route Flow Difference Maps</h2>
+    <p class="section-desc">Delta flow maps show how agent routing shifts between scenarios.</p>
+
+    <div class="img-grid img-grid-2 reveal">
+      <div class="img-card">
+        <img src="img/flow_diff_A_vs_B.png" alt="Flow diff A vs B" loading="lazy">
+        <div class="img-caption">Flow difference: Scenario A → B. Red = increased flow (congestion diversion). Blue = reduced flow.</div>
+      </div>
+      <div class="img-card">
+        <img src="img/flow_diff_B_vs_C.png" alt="Flow diff B vs C" loading="lazy">
+        <div class="img-caption">Flow difference: Scenario B → C. Staircase/escalator flow drops; lift bank flow rises sharply.</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/route_flow_diff.png" alt="Route flow diff" loading="lazy">
+        <div class="img-caption">Aggregated route flow difference across all scenario pairs</div>
+      </div>
+      <div class="img-card">
+        <img src="img/replan_timeline_scenC.png" alt="Replan timeline C" loading="lazy">
+        <div class="img-caption">Replan event timeline — Scenario C (lift queue induced replanning)</div>
+      </div>
+    </div>
+
+    <div class="iframe-wrap reveal" style="margin-top:20px;">
+      <iframe src="interactive/interactive_route_diff.html" height="580" title="Route flow diff"></iframe>
+      <div class="iframe-label">🗺️ Interactive route flow difference explorer — toggle scenarios</div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="gallery">
+    <h2><span class="section-num">05</span> Full Output Image Gallery</h2>
+    <p class="section-desc">All pipeline output figures — click any image to enlarge. Filter by category.</p>
+
+    <div class="gallery-filter">
+      <button class="gf-btn active" data-filter="all">All</button>
+      <button class="gf-btn" data-filter="geometry">Geometry</button>
+      <button class="gf-btn" data-filter="graph">Graph</button>
+      <button class="gf-btn" data-filter="simulation">Simulation</button>
+      <button class="gf-btn" data-filter="data">Data</button>
+    </div>
+
+    <div class="gallery-grid" id="gallery-grid">
+      <!-- geometry -->
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/all_levels_geometry.png" alt="All levels geometry" loading="lazy">
+        <div class="img-caption">All-level floor polygons and obstacles</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/multilevel_isometric.png" alt="Multilevel isometric" loading="lazy">
+        <div class="img-caption">Multilevel isometric station view</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/all_levels_nodes.png" alt="All levels nodes" loading="lazy">
+        <div class="img-caption">Valid navigation nodes across all floors</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/connectors_on_floors.png" alt="Connectors on floors" loading="lazy">
+        <div class="img-caption">Connector endpoints overlaid on floor geometry</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/connector_voxels.png" alt="Connector voxels" loading="lazy">
+        <div class="img-caption">Connector shafts as voxel objects</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/level_area_breakdown.png" alt="Level area breakdown" loading="lazy">
+        <div class="img-caption">Walkable area per floor level</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/node_density_per_level.png" alt="Node density" loading="lazy">
+        <div class="img-caption">Node density distribution per level</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="geometry">
+        <img src="img/semantic_regions_map.png" alt="Semantic regions" loading="lazy">
+        <div class="img-caption">Semantic region annotations</div>
+      </div>
+      <!-- graph -->
+      <div class="img-card gallery-item" data-cat="graph">
+        <img src="img/graph_per_level.png" alt="Graph per level" loading="lazy">
+        <div class="img-caption">In-floor graph per level</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="graph">
+        <img src="img/graph_cross_level_edges.png" alt="Cross-level edges" loading="lazy">
+        <div class="img-caption">Cross-level connector edges</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="graph">
+        <img src="img/graph_degree_distribution.png" alt="Degree distribution" loading="lazy">
+        <div class="img-caption">Node degree distribution</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="graph">
+        <img src="img/example_paths.png" alt="Example paths" loading="lazy">
+        <div class="img-caption">Sample Dijkstra routes</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="graph">
+        <img src="img/entrance_route_map.png" alt="Entrance routes" loading="lazy">
+        <div class="img-caption">Entrance-to-platform route map</div>
+      </div>
+      <!-- simulation -->
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/heatmap_scenA.png" alt="Heatmap A" loading="lazy">
+        <div class="img-caption">Density heatmap — Scenario A</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/heatmap_scenB.png" alt="Heatmap B" loading="lazy">
+        <div class="img-caption">Density heatmap — Scenario B</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/heatmap_scenC.png" alt="Heatmap C" loading="lazy">
+        <div class="img-caption">Density heatmap — Scenario C</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/travel_time_distribution.png" alt="Travel time dist" loading="lazy">
+        <div class="img-caption">Travel time distribution</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/travel_time_boxplot.png" alt="Travel time boxplot" loading="lazy">
+        <div class="img-caption">Travel time box plot</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/replan_timeline.png" alt="Replan timeline" loading="lazy">
+        <div class="img-caption">Replan events timeline</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/stair_queue_timeline.png" alt="Stair queue" loading="lazy">
+        <div class="img-caption">Staircase queue timeline</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/arrival_curves.png" alt="Arrival curves" loading="lazy">
+        <div class="img-caption">Cumulative arrival curves</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/flow_diff_A_vs_B.png" alt="Flow diff A/B" loading="lazy">
+        <div class="img-caption">Flow difference A vs B</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/flow_diff_B_vs_C.png" alt="Flow diff B/C" loading="lazy">
+        <div class="img-caption">Flow difference B vs C</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/elderly_vs_normal.png" alt="Elderly vs normal" loading="lazy">
+        <div class="img-caption">Wheelchair vs unrestricted agents</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/small_multiples_scenA.png" alt="Small multiples A" loading="lazy">
+        <div class="img-caption">Time-step grid — Scenario A</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/small_multiples_scenB.png" alt="Small multiples B" loading="lazy">
+        <div class="img-caption">Time-step grid — Scenario B</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/small_multiples_scenC.png" alt="Small multiples C" loading="lazy">
+        <div class="img-caption">Time-step grid — Scenario C</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/stats_comparison.png" alt="Stats comparison" loading="lazy">
+        <div class="img-caption">Scenario comparison bar chart</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="simulation">
+        <img src="img/evaluation_summary.png" alt="Evaluation summary" loading="lazy">
+        <div class="img-caption">Evaluation summary dashboard</div>
+      </div>
+      <!-- data -->
+      <div class="img-card gallery-item" data-cat="data">
+        <img src="img/data_connector_subtypes.png" alt="Connector subtypes" loading="lazy">
+        <div class="img-caption">Connector subtype counts</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="data">
+        <img src="img/data_elements_by_storey.png" alt="Elements by storey" loading="lazy">
+        <div class="img-caption">IFC elements by floor</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="data">
+        <img src="img/data_obstacle_subcats.png" alt="Obstacle subcategories" loading="lazy">
+        <div class="img-caption">Obstacle element subcategories</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="data">
+        <img src="img/connector_load_bars.png" alt="Connector load" loading="lazy">
+        <div class="img-caption">Connector utilisation bar chart</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="data">
+        <img src="img/capacity_curves.png" alt="Capacity curves" loading="lazy">
+        <div class="img-caption">Connector capacity curves</div>
+      </div>
+      <div class="img-card gallery-item" data-cat="data">
+        <img src="img/queue_over_time.png" alt="Queue over time" loading="lazy">
+        <div class="img-caption">Queue length evolution</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/js/nav.js"></script>
+<script>
+  // Gallery filter
+  document.querySelectorAll('.gf-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.gf-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.gallery-item').forEach(item => {
+        if (filter === 'all' || item.dataset.cat === filter) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>

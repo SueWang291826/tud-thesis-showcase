@@ -1,0 +1,129 @@
+# ==============================================================================
+# Cross-Storey Traffic Relevance Filter Policy
+# ==============================================================================
+# This policy governs which IFC elements survive into the final experimental
+# subset. It implements a strict keep/drop decision based on:
+#   1. Semantic category (from v1 classification + v2 proxy resolution)
+#   2. Storey location
+#   3. IFC class
+#   4. Name-based MEP / technical detection
+#
+# Design principle: KEEP only what affects pedestrian navigation.
+# Everything else is DROPPED from the experiment-facing dataset.
+#
+# All elements get annotated with a filter_decision and filter_reason.
+
+# ==============================
+# A. Category-based retention rules
+# ==============================
+# Categories that are ALWAYS retained on public walkable levels (F1, F3)
+keep_on_public_levels:
+  - walkable_support
+  - obstacle
+  - vertical_connector
+  - opening_passage
+  - railing_barrier
+
+# Categories that are ALWAYS dropped regardless of level
+always_drop_categories:
+  - ignorable
+  - ceiling_roof
+
+# Categories that require further analysis (structural, uncertain)
+conditional_categories:
+  structural:
+    # Structural elements on public levels: keep only if they occupy floor space
+    # (columns, beams at floor level) and drop overhead structural
+    keep_if_floor_level: true
+    drop_if_overhead: true
+  uncertain:
+    # Use proxy disambiguation results if available
+    use_proxy_resolution: true
+
+# ==============================
+# B. IFC class-based drop rules
+# ==============================
+# These IFC classes are ALWAYS dropped as technical/MEP clutter
+drop_ifc_classes:
+  - IfcFlowSegment
+  - IfcFlowFitting
+  - IfcFlowTerminal
+  - IfcFlowController
+  - IfcFlowMovingDevice
+  - IfcFlowStorageDevice
+  - IfcFlowTreatmentDevice
+  - IfcDistributionElement
+  - IfcDistributionFlowElement
+  - IfcDistributionControlElement
+  - IfcEnergyConversionDevice
+  - IfcElectricalElement
+  - IfcReinforcingElement
+  - IfcReinforcingBar
+  - IfcReinforcingMesh
+  - IfcTendon
+  - IfcTendonAnchor
+  - IfcBuildingElementPart
+
+# IFC classes that indicate structural overhead (drop unless on walkable surface)
+overhead_structural_classes:
+  - IfcBeam
+  - IfcCovering
+  - IfcRoof
+
+# ==============================
+# C. Name-based MEP / technical clutter detection
+# ==============================
+# Regex patterns that identify technical, non-navigation elements
+drop_name_patterns:
+  - pattern: "(?i)(管道|管线|pipe|piping)"
+    reason: "Piping — MEP clutter"
+  - pattern: "(?i)(风管|air.?duct|duct|ventilation)"
+    reason: "Ductwork — MEP clutter"
+  - pattern: "(?i)(电缆|cable|wiring|conduit|tray)"
+    reason: "Cable/wiring — MEP clutter"
+  - pattern: "(?i)(空调|HVAC|chiller|AHU|FCU)"
+    reason: "HVAC equipment — MEP clutter"
+  - pattern: "(?i)(消防|fire.?suppression|sprinkler|alarm)"
+    reason: "Fire suppression — technical equipment"
+  - pattern: "(?i)(配电|switchgear|panel.?board|transformer)"
+    reason: "Electrical distribution — technical"
+  - pattern: "(?i)(水泵|pump|水箱|tank)"
+    reason: "Pump/tank — MEP technical"
+  - pattern: "(?i)(桥架|trunking)"
+    reason: "Cable trunking — MEP clutter"
+
+# ==============================
+# D. Cross-storey element retention rules
+# ==============================
+cross_storey:
+  # For elements on non-public levels (F0, F2, F4, F5)
+  # Only retain if they are traffic-relevant connectors
+  retain_from_non_public:
+    required_categories:
+      - vertical_connector
+      - opening_passage
+    required_proxy_decisions:
+      - keep_traffic_relevant
+    # Also retain barriers/railings that are part of stair assemblies
+    retain_stair_components: true
+
+  # For elements that appear on multiple storeys (via cross-file overlap)
+  # Keep only if traffic-relevant
+  cross_file_overlap:
+    keep_if_connector: true
+    keep_if_barrier_on_public_level: true
+    drop_if_technical: true
+
+# ==============================
+# E. Output classification
+# ==============================
+# Each surviving element gets one of these final classifications
+output_classifications:
+  public_walkable_object: "Element on public level relevant to navigation"
+  traffic_connector: "Vertical/horizontal connector between circulation zones"
+  traffic_barrier: "Obstacle or barrier affecting pedestrian movement"
+  traffic_support: "Floor/surface supporting pedestrian movement"
+  dropped_technical: "Dropped — technical/MEP component"
+  dropped_overhead: "Dropped — overhead structure irrelevant to floor-level nav"
+  dropped_non_public: "Dropped — on non-public level with no traffic role"
+  dropped_uncertain: "Dropped — unresolved uncertain with low priority"

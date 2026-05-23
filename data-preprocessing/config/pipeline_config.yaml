@@ -1,0 +1,106 @@
+# ==============================================================================
+# IFC Preprocessing Pipeline - Main Configuration
+# ==============================================================================
+# This configuration file controls all parameters of the preprocessing pipeline.
+# Paths are relative to the project root (data-preprocessing/).
+
+# --- Input Data ---
+input:
+  data_dir: "../data0"
+  ifc_files:
+    platform: "站台层.ifc"
+    equipment: "设备层.ifc"
+    concourse: "站厅层.ifc"
+    traffic: "交通层.ifc"
+
+# --- Output Paths ---
+output:
+  base_dir: "outputs"
+  audit_dir: "outputs/audit"
+  storey_dir: "outputs/storey_mapping"
+  semantic_dir: "outputs/semantic"
+  proxy_dir: "outputs/proxy"
+  geometry_dir: "outputs/geometry"
+  exports_dir: "outputs/exports"
+  figures_dir: "outputs/figures"
+  logs_dir: "outputs/logs"
+
+# --- Storey Reference ---
+# Known storey information from IFC inspection.
+# Elevations are in millimeters (IFC native unit).
+storeys:
+  F0:
+    name_cn: "底板层"
+    name_en: "Base Slab"
+    elevation_mm: -1700
+    guid: "3BOnaDbWz7lvmiNoNaxVXL"
+    is_public: false
+    role: "structural_base"
+  F1:
+    name_cn: "站台层"
+    name_en: "Platform"
+    elevation_mm: 0
+    guid: "3Zu5Bv0LOHrPC10026FoQQ"
+    is_public: true
+    role: "platform"
+  F2:
+    name_cn: "设备层"
+    name_en: "Equipment"
+    elevation_mm: 5300
+    guid: "15Z0v90RiHrPC20026FoKR"
+    is_public: false
+    role: "equipment"
+  F3:
+    name_cn: "站厅层"
+    name_en: "Concourse"
+    elevation_mm: 12100
+    guid: "1zJe9M6nv1ouXQgUD29hF9"
+    is_public: true
+    role: "concourse"
+  F4:
+    name_cn: "交通层"
+    name_en: "Transport"
+    elevation_mm: 17400
+    guid: "1zJe9M6nv1ouXQgUD29hER"
+    is_public: true
+    role: "transport"
+  F5RF:
+    name_cn: "顶板"
+    name_en: "Roof Slab"
+    elevation_mm: 24600
+    guid: ""
+    is_public: false
+    role: "roof_slab"
+
+# --- IFC Schema Assumptions ---
+ifc:
+  expected_schema: "IFC2X3"
+  length_unit: "millimeter"
+  coordinate_precision: 0.01
+
+# --- Geometry Check Parameters ---
+geometry:
+  # Bounding box size thresholds (mm)
+  min_bbox_dimension: 1.0          # Objects smaller than this are suspicious
+  max_bbox_dimension: 500000.0     # Objects larger than this are suspicious
+  degenerate_threshold: 0.1        # Bbox dimension below this is degenerate
+  # Maximum number of faces before flagging as heavy geometry
+  heavy_geometry_face_threshold: 50000
+
+# --- Processing ---
+processing:
+  # Maximum elements to process (-1 = all)
+  max_elements: -1
+  # Whether to attempt geometry extraction (can be slow for large files)
+  extract_geometry: true
+  # Timeout per element for geometry extraction (seconds)
+  geometry_timeout: 30
+
+# --- Visualization ---
+visualization:
+  dpi: 150
+  figure_format: "png"
+  figure_format_vector: "svg"
+  save_svg: true
+  color_palette: "Set2"
+  font_size: 10

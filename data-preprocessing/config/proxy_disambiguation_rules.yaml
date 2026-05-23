@@ -1,0 +1,218 @@
+# ==============================================================================
+# Proxy Automatic Disambiguation Rules
+# ==============================================================================
+# These rules are applied in priority order to classify uncertain proxies
+# into traffic-relevant categories WITHOUT requiring manual review.
+#
+# Each rule produces a decision and a confidence score [0-1].
+# Multi-signal rules that combine name + dimensions get higher confidence.
+#
+# Decision categories:
+#   keep_traffic_relevant    — directly affects pedestrian circulation
+#   keep_barrier_relevant    — obstacle or barrier affecting movement
+#   drop_traffic_irrelevant  — no pedestrian navigation impact
+#   uncertain_low_priority   — probably irrelevant, but cannot confirm
+#   uncertain_high_priority  — might be relevant, needs attention
+#
+# Rule types:
+#   name_match: regex on element name
+#   name_and_dim: regex + dimensional constraint (all dims in metres)
+#   dim_only: purely dimensional heuristic
+
+# ==============================
+# Priority 1: Name-based rules (high confidence when matched)
+# ==============================
+name_rules:
+  # --- Floor tactile paving (blind guidance / warning tiles) ---
+  - pattern: "(?i)(止步块|行步块|盲道|导盲|tactile|warning.?strip)"
+    decision: "keep_traffic_relevant"
+    sub_category: "tactile_paving"
+    confidence: 0.95
+    note: "Tactile pavement blocks (blind guidance tiles) — affects accessible circulation"
+
+  # --- Escalators ---
+  - pattern: "(?i)(自动扶梯|escalator|扶梯)"
+    decision: "keep_traffic_relevant"
+    sub_category: "vertical_connector"
+    confidence: 0.98
+    note: "Escalator — primary vertical connector"
+
+  # --- Elevators ---
+  - pattern: "(?i)(电梯|elevator|lift)"
+    decision: "keep_traffic_relevant"
+    sub_category: "vertical_connector"
+    confidence: 0.95
+    note: "Elevator or elevator component — vertical connector"
+
+  # --- Ticket gates ---
+  - pattern: "(?i)(闸机|验票|ticket.?gate|turnstile|fare.?gate)"
+    decision: "keep_barrier_relevant"
+    sub_category: "fare_gate"
+    confidence: 0.98
+    note: "Ticket gate / fare barrier — constrains pedestrian flow"
+
+  # --- Security screening equipment ---
+  - pattern: "(?i)(安检|security.?check|x.?ray|screening)"
+    decision: "keep_barrier_relevant"
+    sub_category: "security_equipment"
+    confidence: 0.95
+    note: "Security screening equipment — obstacle in circulation"
+
+  # --- Trains (not navigation-relevant) ---
+  - pattern: "(?i)(火车|列车|train|locomotive)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "rolling_stock"
+    confidence: 0.99
+    note: "Train / rolling stock — not a fixed navigation element"
+
+  # --- Tunnel structure ---
+  - pattern: "(?i)(隧道|tunnel)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "tunnel_structure"
+    confidence: 0.85
+    note: "Tunnel structure — not directly relevant to indoor navigation"
+
+  # --- Slab edges ---
+  - pattern: "(?i)(楼板边缘|slab.?edge|floor.?edge)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "structural_detail"
+    confidence: 0.80
+    note: "Slab edge detail — structural, not traffic-relevant"
+
+  # --- Pedestrian direction arrows ---
+  - pattern: "(?i)(人流方向|方向指示|direction.?arrow|wayfinding)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "signage"
+    confidence: 0.90
+    note: "Direction signage — visual guide, not physical obstacle"
+
+  # --- Model text / annotations ---
+  - pattern: "(?i)(模型文字|text|annotation|label|标注)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "annotation"
+    confidence: 0.95
+    note: "Text annotation — no physical presence"
+
+  # --- Trash cans ---
+  - pattern: "(?i)(垃圾桶|垃圾箱|trash|waste.?bin|rubbish)"
+    decision: "keep_barrier_relevant"
+    sub_category: "furniture_obstacle"
+    confidence: 0.85
+    note: "Trash receptacle — small obstacle in circulation"
+
+  # --- Drainage ---
+  - pattern: "(?i)(排水沟|排水|drain|gutter)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "drainage"
+    confidence: 0.85
+    note: "Drainage element — below floor surface, no obstacle"
+
+  # --- Service counters / customer service ---
+  - pattern: "(?i)(客服|服务台|service.?counter|information)"
+    decision: "keep_barrier_relevant"
+    sub_category: "service_counter"
+    confidence: 0.90
+    note: "Service counter — obstacle in circulation space"
+
+  # --- Vending / ticket machines ---
+  - pattern: "(?i)(售票|自动售货|vending|TVM|ticket.?machine)"
+    decision: "keep_barrier_relevant"
+    sub_category: "vending_machine"
+    confidence: 0.90
+    note: "Vending or ticket machine — obstacle"
+
+  # --- Platform screen doors ---
+  - pattern: "(?i)(屏蔽门|PSD|platform.?screen|站台门)"
+    decision: "keep_barrier_relevant"
+    sub_category: "platform_screen_door"
+    confidence: 0.98
+    note: "Platform screen door — critical barrier on platform level"
+
+  # --- MEP components ---
+  - pattern: "(?i)(管道|风管|电缆|cable|duct|pipe|conduit|tray|HVAC|空调|通风)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "mep_component"
+    confidence: 0.90
+    note: "MEP component — not relevant to pedestrian navigation"
+
+  # --- Lighting ---
+  - pattern: "(?i)(灯|lighting|lamp|luminaire|照明)"
+    decision: "drop_traffic_irrelevant"
+    sub_category: "lighting"
+    confidence: 0.85
+    note: "Lighting fixture — overhead, not obstacle"
+
+# ==============================
+# Priority 2: Combined name + dimensional rules (higher confidence)
+# ==============================
+name_and_dim_rules:
+  # Tactile paving: must be flat
+  - pattern: "(?i)(止步块|行步块|盲道)"
+    dimension_check:
+      dz_max: 0.05          # metres — dz < 5cm confirms floor-level
+    decision: "keep_traffic_relevant"
+    sub_category: "tactile_paving"
+    confidence: 0.98
+    note: "Flat tactile paving confirmed by name + flat dimensions"
+
+  # Escalator: must be tall
+  - pattern: "(?i)(自动扶梯|escalator)"
+    dimension_check:
+      dz_min: 3.0           # metres — escalator must span multiple levels
+    decision: "keep_traffic_relevant"
+    sub_category: "vertical_connector"
+    confidence: 0.99
+    note: "Escalator confirmed by name + multi-level height span"
+
+# ==============================
+# Priority 3: Dimension-only heuristics (lower confidence, for remaining unknowns)
+# ==============================
+dimension_rules:
+  # Very flat objects at floor level → likely floor markings
+  - condition: "flat_floor_object"
+    dimension_check:
+      dz_max: 0.05          # dz < 5cm
+      footprint_min: 0.01   # at least 1cm in both x and y
+    decision: "uncertain_low_priority"
+    sub_category: "floor_marking_candidate"
+    confidence: 0.50
+    note: "Very flat object — likely floor marking or surface detail"
+
+  # Human-scale upright objects → likely obstacles
+  - condition: "human_scale_obstacle"
+    dimension_check:
+      dz_min: 0.8           # at least 80cm tall
+      dz_max: 2.5           # not taller than 250cm
+      footprint_max: 5.0    # not wider than 5m (otherwise might be a wall)
+    decision: "uncertain_high_priority"
+    sub_category: "possible_obstacle"
+    confidence: 0.40
+    note: "Human-height object — possibly an obstacle affecting circulation"
+
+  # Very tall objects (>3m) without name match → likely structural or connector
+  - condition: "tall_structure"
+    dimension_check:
+      dz_min: 3.0
+    decision: "uncertain_high_priority"
+    sub_category: "tall_structure"
+    confidence: 0.35
+    note: "Tall structure spanning multiple levels — could be connector or structural"
+
+  # Tiny objects (< 1cm in all dimensions)
+  - condition: "tiny_object"
+    dimension_check:
+      dx_max: 0.01
+      dy_max: 0.01
+      dz_max: 0.01
+    decision: "drop_traffic_irrelevant"
+    sub_category: "negligible_geometry"
+    confidence: 0.70
+    note: "Negligible geometry — too small to affect navigation"
+
+# ==============================
+# Default fallback
+# ==============================
+default:
+  decision: "uncertain_low_priority"
+  confidence: 0.20
+  note: "No disambiguation rule matched — low priority uncertain"

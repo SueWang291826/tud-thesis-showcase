@@ -1,0 +1,98 @@
+# ==============================================================================
+# V2 Experimental Subset Pipeline Configuration
+# ==============================================================================
+# This configuration controls the Phase 2 / v2 preprocessing pipeline that
+# transforms the v1 audit+classification outputs into experiment-ready data
+# products with metre-normalized units, automatic proxy resolution, strict
+# traffic-relevance filtering, and filtered IFC subset export.
+#
+# All v1 outputs are preserved; v2 outputs are written to outputs/v2/.
+
+# --- Unit Normalization ---
+# The source IFC files use millimetres (MILLI METRE).
+# ifcopenshell.geom.create_shape returns coordinates in METRES (SI default).
+# We adopt METRES as the canonical downstream unit.
+units:
+  source_ifc_unit: "millimetre"
+  source_scale_to_metre: 0.001          # mm × 0.001 = m
+  canonical_unit: "metre"
+  # Bbox data from ifcopenshell.geom is already in metres.
+  # Storey elevations in v1 config are mm → will be converted.
+  ifcopenshell_geom_unit: "metre"       # Documented fact, not a setting
+
+# --- V2 Output Paths ---
+v2_output:
+  base_dir: "outputs/v2"
+  normalized_dir: "outputs/v2/normalized"
+  proxy_resolved_dir: "outputs/v2/proxy_resolved"
+  traffic_filtered_dir: "outputs/v2/traffic_filtered"
+  ifc_subsets_dir: "outputs/v2/ifc_subsets"
+  figures_v2_dir: "outputs/v2/figures"
+  validation_dir: "outputs/v2/validation"
+
+# --- Proxy Disambiguation ---
+proxy_disambiguation:
+  # Confidence thresholds
+  high_confidence_threshold: 0.80
+  medium_confidence_threshold: 0.50
+  # Dimensional heuristics (metres, since bbox is in metres)
+  flat_object_dz_threshold: 0.05        # dz < 5cm → floor marking / tile
+  human_height_dz_range: [0.8, 2.5]     # 80cm-250cm → human-scale obstacle
+  tall_object_dz_threshold: 3.0         # dz > 3m → likely structural or connector
+  tiny_footprint_threshold: 0.01        # max(dx,dy) < 1cm → ignore
+  # These external rule files contain the detailed disambiguation logic
+  rules_file: "config/proxy_disambiguation_rules.yaml"
+
+# --- Traffic Filter ---
+traffic_filter:
+  policy_file: "config/traffic_filter_policy.yaml"
+  # Public walkable levels (must match v1 storey mapping)
+  public_walkable_levels:
+    - "F1 站台层"
+    - "F3 站厅层"
+    - "F4 交通层"
+  # Levels that may contribute connector elements
+  connector_source_levels:
+    - "F0 底板层"
+    - "F2 设备层"
+  # Categories that always survive on public levels
+  always_keep_categories:
+    - "walkable_support"
+    - "obstacle"
+    - "vertical_connector"
+    - "opening_passage"
+    - "railing_barrier"
+  # Categories that are always dropped
+  always_drop_categories:
+    - "ignorable"
+    - "ceiling_roof"
+
+# --- IFC Subset Export ---
+ifc_export:
+  # Whether to attempt filtered IFC export
+  enabled: true
+  # Which subsets to generate
+  subsets:
+    platform_public:
+      description: "F1 platform public-level navigation elements"
+      storeys: ["F1 站台层"]
+      include_connectors: true
+    concourse_public:
+      description: "F3 concourse public-level navigation elements"
+      storeys: ["F3 站厅层"]
+      include_connectors: true
+    vertical_connectors:
+      description: "Cross-storey vertical connector elements"
+      categories: ["vertical_connector"]
+    navigation_merged:
+      description: "Merged navigation subset (F1+F3+F4+connectors)"
+      storeys: ["F1 站台层", "F3 站厅层", "F4 交通层"]
+      include_connectors: true
+  # Validation: try to reopen exported IFC files
+  validate_reopen: true
+
+# --- Geometry Thresholds (metres, for v2 usage) ---
+geometry_m:
+  min_bbox_dimension: 0.001             # 1mm in metres
+  max_bbox_dimension: 500.0             # 500m in metres
+  degenerate_threshold: 0.0001          # 0.1mm in metres

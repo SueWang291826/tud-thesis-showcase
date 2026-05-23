@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Station Agent — 地铁站智能导航 Agent</title>
+  <style>
+    /* ── Reset & theme ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --accent: #1f6feb;
+      --accent-hover: #388bfd;
+      --text: #c9d1d9;
+      --text-dim: #8b949e;
+      --user-bubble: #1f3a5c;
+      --bot-bubble: #21262d;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --red: #f85149;
+      --radius: 10px;
+      --font: 'Segoe UI', system-ui, sans-serif;
+    }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); }
+
+    /* ── Layout ── */
+    .shell {
+      display: grid;
+      grid-template-columns: 220px 1fr 1.35fr;
+      grid-template-rows: 100vh;
+      height: 100vh;
+    }
+
+    /* ── 3D Map Panel ── */
+    .map-panel {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+    }
+    .map-topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .map-topbar .map-hint {
+      flex: 1;
+      color: var(--text-dim);
+      font-size: 11.5px;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .map-clear-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .map-clear-btn:hover { border-color: var(--accent); }
+    #map3d { width: 100%; flex: 1; min-height: 0; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 14px;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .sidebar h2 { font-size: 15px; color: var(--text-dim); letter-spacing: .04em; padding: 4px 0; }
+    .quick-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 12.5px;
+      padding: 9px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color .15s, background .15s;
+    }
+    .quick-btn:hover { background: #2a313c; border-color: var(--accent); }
+
+    /* ── Stats cards ── */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 10px 8px;
+    }
+    .stat-card .label { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+    .stat-card .value { font-size: 18px; font-weight: 600; color: var(--text); }
+    .stat-card .unit { font-size: 10px; color: var(--text-dim); margin-left: 2px; }
+
+    /* ── Main chat area ── */
+    .main { display: flex; flex-direction: column; height: 100vh; }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar .logo { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .topbar h1 { font-size: 16px; font-weight: 600; }
+    .topbar .subtitle { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 2px rgba(63,185,80,.25); margin-left: 8px; }
+
+    /* ── Messages ── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .messages::-webkit-scrollbar { width: 5px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .msg { display: flex; gap: 10px; max-width: 82%; }
+    .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+    .msg.bot  { align-self: flex-start; }
+
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .user .avatar { background: var(--accent); color: #fff; }
+    .bot  .avatar { background: var(--surface2); border: 1px solid var(--border); }
+
+    .bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.65;
+      word-break: break-word;
+    }
+    .user .bubble { background: var(--user-bubble); border-bottom-right-radius: 2px; }
+    .bot  .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
+
+    /* Markdown rendering inside bubble */
+    .bubble strong { color: var(--accent-hover); }
+    .bubble code {
+      background: #0d1117; border: 1px solid var(--border);
+      border-radius: 3px; padding: 1px 5px; font-size: 12.5px;
+    }
+    .bubble ul, .bubble ol { padding-left: 20px; margin: 4px 0; }
+    .bubble li { margin: 2px 0; }
+
+    /* Thinking indicator */
+    .thinking { display: flex; align-items: center; gap: 5px; padding: 10px 14px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); animation: bounce .9s infinite; }
+    .dot:nth-child(2) { animation-delay: .15s; }
+    .dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%,80%,100%{transform:scale(1)} 40%{transform:scale(1.4)} }
+
+    /* ── Input bar ── */
+    .input-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    #chat-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      padding: 10px 14px;
+      resize: none;
+      min-height: 42px;
+      max-height: 130px;
+      outline: none;
+      transition: border-color .15s;
+      overflow-y: auto;
+    }
+    #chat-input:focus { border-color: var(--accent); }
+    #chat-input::placeholder { color: var(--text-dim); }
+
+    .send-btn {
+      background: var(--accent);
+      border: none; border-radius: var(--radius);
+      color: #fff; cursor: pointer;
+      font-size: 16px; padding: 10px 14px;
+      transition: background .15s;
+      height: 42px;
+    }
+    .send-btn:hover { background: var(--accent-hover); }
+    .send-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 220px 1fr; }
+      .map-panel { display: none; }
+    }
+    @media (max-width: 720px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .map-panel { display: none; }
+      .messages { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <h2>� 快捷操作</h2>
+    <button class="quick-btn" type="button" onclick="sendQuick('从入口A规划到站台的路线')">📍 入口A → 站台</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('从入口D规划到站台的路线')">📍 入口D → 站台</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('无障碍路线：从入口B到站台，避开扶梯')">♿ 无障碍路线</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('查询F3站厅层的扶梯分布情况')">🔼 F3 扶梯分布</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('当前最拥堵的区域在哪里？分析瓶颈')">🔥 拥堵热点分析</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('介绍车站楼层结构和整体概览')">🏗 车站结构总览</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('模拟200名乘客使用静态路由策略')">🤖 运行仿真</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('比较静态路由和动态拥堵感知路由策略的差异')">⚖️ 策略对比分析</button>
+    <button class="quick-btn" type="button" onclick="sendQuick('解释为什么选择这条路线？动态重规划如何分流？')">💡 决策解释</button>
+
+    <h2 style="margin-top:8px">📊 导航图统计</h2>
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="label">节点数</div><div class="value" id="s-nodes">—</div></div>
+      <div class="stat-card"><div class="label">边数</div><div class="value" id="s-edges">—</div></div>
+      <div class="stat-card"><div class="label">盲道节点</div><div class="value" id="s-blind">—</div></div>
+      <div class="stat-card"><div class="label">楼层数</div><div class="value" id="s-levels">—</div></div>
+    </div>
+
+    <h2 style="margin-top:8px">🏛️ 系统架构</h2>
+    <div style="font-size:11.5px; color:var(--text-dim); line-height:1.7; padding:4px 2px;">
+      <div style="margin-bottom:4px;">🧠 <span style="color:#58a6ff;">LLM 编排层</span><br><span style="padding-left:16px;">DeepSeek / GPT-4o Function Calling</span></div>
+      <div style="margin-bottom:4px;">🔧 <span style="color:#3fb950;">工具层 SDK</span><br><span style="padding-left:16px;">8 个结构化工具 · 图/路由/仿真</span></div>
+      <div style="margin-bottom:4px;">🌐 <span style="color:#d2a8ff;">REST API 层</span><br><span style="padding-left:16px;">FastAPI · /api/chat · Plotly 3D</span></div>
+      <div>📚 <span style="color:#d29922;">RAG 知识库</span><br><span style="padding-left:16px;">ChromaDB · FAISS · 5篇文档</span></div>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+    <header class="topbar">
+      <div class="logo">🚇</div>
+      <h1>Station Agent</h1>
+      <div class="status-dot" id="status-dot" title="服务状态"></div>
+      <select id="model-select" title="LLM 提供商" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;padding:3px 8px;border-radius:6px;cursor:pointer;outline:none;">
+        <option value="deepseek">DeepSeek Chat</option>
+        <option value="gpt-4o-mini">GPT-4o-mini</option>
+        <option value="gpt-4o">GPT-4o</option>
+        <option value="regex">Regex 兜底（无需API）</option>
+      </select>
+      <span class="subtitle">三层 Agent 架构 · BIM × 图算法 × LLM · TU Delft 硕士论文</span>
+    </header>
+
+    <div class="messages" id="messages">
+      <!-- Welcome message -->
+      <div class="msg bot">
+        <div class="avatar">🤖</div>
+        <div class="bubble">
+          <strong>你好！</strong> 我是地铁站智能导航 Agent。<br>
+          我可以帮你：<strong>路径规划</strong>、<strong>查询连通器状态</strong>、<strong>识别拥堵热点</strong>、<strong>运行人群仿真</strong>、<strong>比较路由策略</strong>，以及回答车站设施问题。<br><br>
+          🏗️ <strong>车站结构</strong>：4层 —— F4交通层（出入口A/B/C）→ F3站厅层（出入口D·闸机）→ F2设备层 → F1站台层<br>
+          🚪 <strong>4个活跃出入口</strong>：A、B、C（F4地面层）和 D（F3站厅层）<br>
+          📊 <strong>最新基准测试</strong>（200名乘客）：静态路由 <strong>98% 到达率 / 184s</strong>，动态路由 <strong>98% / 193.7s</strong>（78%乘客触发重规划）<br><br>
+          试试问：<em>「从入口A到站台怎么走？」</em> 或 <em>「比较静态和动态路由策略」</em>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <textarea id="chat-input" placeholder="请输入问题，例如：从入口B到站台最快路线？ / Fastest route from entrance B to platform?" rows="1"></textarea>
+      <button type="button" class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+
+  <!-- ── 3D Map Panel ── -->
+  <div class="map-panel">
+    <header class="map-topbar">
+      <span>🗺️ 3D 导航地图</span>
+      <span class="map-hint" id="map-hint">正在加载节点数据…</span>
+      <button class="map-clear-btn" type="button" onclick="clearRoute()">&#10005; 清除路线</button>
+    </header>
+    <div id="map3d"></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.29.1.min.js" charset="utf-8"></script>
+<script>
+  const API_BASE = '';  // same origin
+  let _busy = false;
+
+  // ── Auto-resize textarea
+  const textarea = document.getElementById('chat-input');
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 130) + 'px';
+  });
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  // ── Simple Markdown → HTML (bold, code, lists, line breaks)
+  function md(text) {
+    return text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/^[-*]\s(.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+      .replace(/\n/g, '<br>');
+  }
+
+  function appendMsg(role, html) {
+    const feed = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    const avatar = role === 'user' ? '<div class="avatar">You</div>' : '<div class="avatar">🤖</div>';
+    div.innerHTML = `${role === 'user' ? '' : avatar}<div class="bubble">${html}</div>${role === 'user' ? avatar : ''}`;
+    feed.appendChild(div);
+    feed.scrollTop = feed.scrollHeight;
+    return div;
+  }
+
+  function appendThinking() {
+    const feed = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = 'msg bot';
+    div.id = 'thinking-indicator';
+    const _pLabels = {'deepseek':'DeepSeek','gpt-4o-mini':'GPT-4o-mini','gpt-4o':'GPT-4o','regex':'Regex'};
+    const sel = document.getElementById('model-select').value;
+    const thinkLabel = sel === 'regex' ? '正则分类中…' : `${_pLabels[sel] || sel} 思考中…`;
+    div.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="font-size:12px;color:var(--text-dim);margin-left:8px">${thinkLabel}</span></div></div>`;
+    feed.appendChild(div);
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  function removeThinking() {
+    const t = document.getElementById('thinking-indicator');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    if (_busy) return;
+    const input = textarea.value.trim();
+    if (!input) return;
+    textarea.value = ''; textarea.style.height = '';
+    appendMsg('user', md(input));
+    await chat(input);
+  }
+
+  function sendQuick(text) {
+    if (_busy) return;
+    textarea.value = '';
+    appendMsg('user', md(text));
+    chat(text);
+  }
+
+  async function chat(message) {
+    _busy = true;
+    document.getElementById('send-btn').disabled = true;
+    appendThinking();
+    try {
+      const res = await fetch(`${API_BASE}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, model_provider: document.getElementById('model-select').value })
+      });
+      removeThinking();
+      if (!res.ok) {
+        const err = await res.text();
+      appendMsg('bot', `<span style="color:var(--red)">请求失败 (${res.status}): ${md(err)}</span>`);
+      } else {
+        const data = await res.json();
+        let replyHtml = md(data.reply || '(no reply)');
+        if (data.llm_func) {
+          const _pLabels = {'deepseek':'DeepSeek','gpt-4o-mini':'GPT-4o-mini','gpt-4o':'GPT-4o'};
+          const isLlm = data.llm_mode !== 'regex';
+          const providerName = isLlm ? (_pLabels[data.llm_provider] || data.llm_provider || 'LLM') : 'Regex 分类器（兑底）';
+          const labelColor = isLlm ? '#58a6ff' : '#d29922';
+          const labelTitle = isLlm ? '' : ' title="LLM API 不可用，自动切换到正则分类"';
+          const modeLabel = `<span style="color:${labelColor}"${labelTitle}>${providerName}</span>`;
+          replyHtml += `<div style="margin-top:9px;padding-top:7px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim)">🧠 ${modeLabel} → <code>${data.llm_func}</code></div>`;
+        }
+        appendMsg('bot', replyHtml);
+        if (data.route_3d) renderRoute(data.route_3d);
+      }
+    } catch (err) {
+      removeThinking();
+      appendMsg('bot', `<span style="color:var(--red)">连接错误：${err.message}</span>`);
+    } finally {
+      _busy = false;
+      document.getElementById('send-btn').disabled = false;
+    }
+  }
+
+  // ── Load stats on startup
+  async function loadStats() {
+    try {
+      const res = await fetch(`${API_BASE}/tools/query_environment`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+      });
+      if (!res.ok) return;
+      const d = await res.json();
+      document.getElementById('s-nodes').textContent = d.total_nodes?.toLocaleString() ?? '—';
+      document.getElementById('s-edges').textContent = d.total_edges?.toLocaleString() ?? '—';
+      document.getElementById('s-blind').textContent = d.blind_path_nodes ?? '—';
+      document.getElementById('s-levels').textContent = d.levels?.length ?? '—';
+      document.getElementById('status-dot').style.background = '#3fb950';
+    } catch {
+      document.getElementById('status-dot').style.background = '#f85149';
+    }
+  }
+
+  loadStats();
+
+  // ── 3D Map
+  let _mapBaseCount = 0;
+  let _mapReady = false;
+
+  async function initMap() {
+    const hint = document.getElementById('map-hint');
+    try {
+      hint.textContent = '正在加载节点数据…';
+      const res = await fetch(`${API_BASE}/map/nodes`);
+      if (!res.ok) { hint.textContent = '地图数据不可用'; return; }
+      const data = await res.json();
+
+      const traces = data.layers.map(layer => {
+        const tr = {
+          type: 'scatter3d', mode: 'markers',
+          name: layer.name,
+          x: layer.x, y: layer.y, z: layer.z,
+          marker: {
+            size: layer.size ?? 2,
+            color: layer.color,
+            symbol: layer.symbol ?? 'circle',
+            opacity: layer.opacity ?? 0.4,
+          },
+        };
+        if (layer.labels) {
+          tr.text = layer.labels;
+          tr.hovertemplate = '%{text}<extra></extra>';
+        }
+        return tr;
+      });
+
+      const layout = {
+        paper_bgcolor: '#0d1117',
+        font: { color: '#c9d1d9', size: 11 },
+        scene: {
+          bgcolor: '#161b22',
+          xaxis: { title: 'X (m)', gridcolor: '#30363d', zerolinecolor: '#30363d', tickfont: { color: '#8b949e' } },
+          yaxis: { title: 'Y (m)', gridcolor: '#30363d', zerolinecolor: '#30363d', tickfont: { color: '#8b949e' } },
+          zaxis: { title: 'Elevation ×3', gridcolor: '#30363d', zerolinecolor: '#30363d', tickfont: { color: '#8b949e' } },
+          aspectmode: 'manual',
+          aspectratio: { x: 2.5, y: 0.5, z: 0.7 },
+          camera: { eye: { x: 1.5, y: -1.5, z: 1.0 } },
+        },
+        legend: {
+          x: 0, y: 1,
+          bgcolor: 'rgba(22,27,34,0.88)',
+          bordercolor: '#30363d',
+          borderwidth: 1,
+          font: { size: 10 },
+        },
+        margin: { l: 0, r: 0, t: 0, b: 0 },
+        autosize: true,
+        uirevision: 'base',
+      };
+
+      Plotly.newPlot('map3d', traces, layout, { responsive: true, displayModeBar: false });
+      _mapBaseCount = traces.length;
+      _mapReady = true;
+      hint.textContent = '拖拽旋转 · 滚轮缩放 · 规划路线后自动高亮路径';
+    } catch (e) {
+      document.getElementById('map-hint').textContent = '地图初始化错误：' + e.message;
+    }
+  }
+
+  function renderRoute(r) {
+    if (!_mapReady || !r?.x?.length) return;
+    const mapDiv = document.getElementById('map3d');
+    if (!mapDiv?.data) return;
+
+    const base = mapDiv.data.slice(0, _mapBaseCount);
+
+    const routeTrace = {
+      type: 'scatter3d', mode: 'lines',
+      name: `Route (${r.strategy})`,
+      x: r.x, y: r.y, z: r.z,
+      line: { color: '#f0e040', width: 5 },
+      hovertemplate: '%{text}<extra></extra>',
+      text: r.labels,
+    };
+    const startTrace = {
+      type: 'scatter3d', mode: 'markers',
+      name: 'Start',
+      x: [r.x[0]], y: [r.y[0]], z: [r.z[0]],
+      marker: { size: 11, color: '#3fb950', symbol: 'diamond', opacity: 1,
+                line: { color: '#fff', width: 1.5 } },
+      hovertemplate: `Start: ${r.origin}<extra></extra>`,
+    };
+    const endTrace = {
+      type: 'scatter3d', mode: 'markers',
+      name: 'End',
+      x: [r.x.at(-1)], y: [r.y.at(-1)], z: [r.z.at(-1)],
+      marker: { size: 11, color: '#f85149', symbol: 'diamond', opacity: 1,
+                line: { color: '#fff', width: 1.5 } },
+      hovertemplate: `End: ${r.destination}<extra></extra>`,
+    };
+
+    const extraTraces = [routeTrace, startTrace, endTrace];
+
+    // ── Connector waypoints along route (stairs / escalators / elevators)
+    if (r.connectors?.x?.length) {
+      const c = r.connectors;
+      // Group by type for legend entries
+      const groups = {};
+      for (let i = 0; i < c.x.length; i++) {
+        const lbl = c.labels[i];
+        const typeKey = lbl.split(' ')[0]; // "Stair" / "Escalator" / "Elevator"
+        if (!groups[typeKey]) groups[typeKey] = { x:[], y:[], z:[], labels:[], color: c.colors[i], symbol: c.symbols[i] };
+        groups[typeKey].x.push(c.x[i]);
+        groups[typeKey].y.push(c.y[i]);
+        groups[typeKey].z.push(c.z[i]);
+        groups[typeKey].labels.push(lbl);
+      }
+      const iconMap = { Stair: '🪜', Escalator: '↕', Elevator: '🛗' };
+      for (const [typeKey, gd] of Object.entries(groups)) {
+        extraTraces.push({
+          type: 'scatter3d', mode: 'markers+text',
+          name: `${iconMap[typeKey] ?? ''} ${typeKey} on route`,
+          x: gd.x, y: gd.y, z: gd.z,
+          text: gd.labels,
+          textposition: 'top center',
+          textfont: { size: 9, color: '#fff' },
+          marker: {
+            size: 12, color: gd.color, symbol: gd.symbol, opacity: 1.0,
+            line: { color: '#fff', width: 1.5 },
+          },
+          hovertemplate: '%{text}<extra></extra>',
+        });
+      }
+    }
+
+    Plotly.react('map3d', [...base, ...extraTraces], mapDiv.layout);
+
+    const acc = r.is_accessible ? '✅' : '⚠️ esc';
+    const connInfo = r.connectors?.x?.length ? ` · ${r.connectors.x.length} connector(s)` : '';
+    document.getElementById('map-hint').textContent =
+      `${r.origin} → ${r.destination} · ${r.total_distance_m}m · ${r.total_travel_time_s}s · ${acc}${connInfo}`;
+  }
+
+  function clearRoute() {
+    if (!_mapReady) return;
+    const mapDiv = document.getElementById('map3d');
+    if (!mapDiv?.data) return;
+    Plotly.react('map3d', mapDiv.data.slice(0, _mapBaseCount), mapDiv.layout);
+    document.getElementById('map-hint').textContent = '路线已清除';
+  }
+
+  initMap();
+</script>
+</body>
+</html>

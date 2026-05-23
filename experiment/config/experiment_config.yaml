@@ -1,0 +1,553 @@
+# ==============================================================================
+# Experiment Framework Configuration
+# ==============================================================================
+# Multi-level indoor navigation for metro station thesis experiment.
+# All coordinates in METRES. All times in SECONDS.
+
+# --- Data Sources ---
+data:
+  preprocessing_root: "../data-preprocessing"
+  # V2 traffic-filtered products
+  retained_csv: "outputs/v2/traffic_filtered/retained_elements.csv"
+  barrier_csv: "outputs/v2/traffic_filtered/barrier_objects.csv"
+  connector_csv: "outputs/v3/connector_validation/connectors_validated.csv"
+  obstacle_csv: "outputs/v3/obstacle_recalibration/obstacles_recalibrated.csv"
+  bbox_csv: "outputs/v2/normalized/bbox_samples_metres.csv"
+  # IFC subsets (for geometry extraction)
+  ifc_subsets:
+    F1: "outputs/v3/ifc_subsets/platform_F1_public.ifc"
+    F3: "outputs/v3/ifc_subsets/concourse_F3_public.ifc"
+    F4: "outputs/v3/ifc_subsets/traffic_F4_public.ifc"
+    F2_connectors: "outputs/v3/ifc_subsets/selected_F2_connectors.ifc"
+  # Raw IFC files (fallback for geometry extraction)
+  ifc_raw:
+    platform: "../data0/站台层.ifc"
+    equipment: "../data0/设备层.ifc"
+    concourse: "../data0/站厅层.ifc"
+    traffic: "../data0/交通层.ifc"
+
+# --- Station Topology ---
+station:
+  levels:
+    F1:
+      name_cn: "站台层"
+      name_en: "Platform"
+      elevation_m: 0.0
+      is_public: true
+      is_walkable: true
+      role: "platform"
+    F2:
+      name_cn: "设备层"
+      name_en: "Equipment"
+      elevation_m: 5.3
+      is_public: false
+      is_walkable: false      # connector-only level
+      role: "connector_pass"
+    F3:
+      name_cn: "站厅层"
+      name_en: "Concourse"
+      elevation_m: 12.1
+      is_public: true
+      is_walkable: true
+      role: "concourse"
+    F4:
+      name_cn: "交通层"
+      name_en: "Transport"
+      elevation_m: 17.4
+      is_public: true
+      is_walkable: true
+      role: "transport"
+
+  # Which raw IFC file holds each level's floor slabs
+  level_raw_ifc:
+    F1: platform        # 站台层.ifc → IfcSlab for F1
+    F3: concourse       # 站厅层.ifc → IfcSlab for F3
+    F4: traffic         # 交通层.ifc → IfcSlab for F4
+
+  # Manual elevator override (IFC only contains the bottom portion)
+  elevator_override:
+    connected_levels: [F1, F3]   # 电梯井连接 站台层↔站厅层
+
+  # Vertical connectivity between levels
+  connections:
+    - from: F1
+      to: F3
+      via: [stairs, escalators, elevators]
+      pass_through: F2            # F2 is traversed but not a destination
+    - from: F3
+      to: F4
+      via: [stairs, escalators]
+
+  # ---- Manual Spatial Overrides ----
+  # Coordinates are [min_x, min_y, max_x, max_y] in metres.
+  # Applied AFTER automatic obstacle extraction, BEFORE walkable computation.
+  # Derived from IFC wall analysis — precise bounds from actual geometry.
+  manual_overrides:
+    F1:
+      # ---- Floor patches ----
+      floor_patches:
+        # Right-bottom corner: IFC slab has a shallow notch between the service
+        # room south edge (y=6.8) and the south PSD zone (y≈4.0).  Patch fills
+        # the walkable strip so grid nodes reach the far east of the platform.
+        - name: "right_bottom_corner"
+          bounds: [129.0, 4.0, 135.5, 6.8]
+      # ---- Forbidden zones (private / inaccessible rooms) ----
+      forbidden_zones:
+        - name: "left_service_rooms"
+          bounds: [0.6, 6.2, 26.8, 15.0]
+        - name: "right_service_rooms"
+          bounds: [129.2, 6.8, 145.6, 14.7]
+        # Train track zones — south and north of PSDs are train-only, not walkable.
+        # Bounds stop just at the PSD barrier face to avoid cutting off door nodes.
+        - name: "south_track_zone"
+          bounds: [-5.4, -3.4, 151.0, 3.5]
+        - name: "north_track_zone"
+          bounds: [-5.4, 17.8, 151.0, 24.1]
+        # NW end-wall: connects left_service_rooms top edge to north PSD
+        # barrier.  IFC element 基本墙:自动门顶部150装饰:832877 has NaN bbox,
+        # so it must be injected manually.  (Right-side mirror :832899 has
+        # valid coords and is already in obstacle CSV.)
+        - name: "nw_end_wall"
+          bounds: [19.7, 15.0, 19.95, 17.45]
+        # Center F2 maintenance staircase shaft — not for public use.
+        # Covers stair 804151 (z=0-1.8) and elevated stair 805886 (z=1.9-6.7).
+        # Passage under elevated stair is carved out by walkable_passages below.
+        - name: "center_F2_stair"
+          bounds: [69.0, 10.0, 85.0, 24.0]
+      # Carve out walkable passage UNDER the elevated F2 staircase
+      # Staircase walls occupy x≈70-78; area east to x=85 is open at ground level.
+      walkable_passages:
+        - name: "under_stair_passage"
+          bounds: [69.0, 10.0, 85.0, 17.4]
+      # Metro track zones
+      track_zones:
+        - name: "north_track"
+          bounds: [-5.4, 17.7, 151.0, 24.1]
+        - name: "south_track"
+          bounds: [-5.4, -3.4, 151.0, 3.7]
+
+      # ---- Dynamic doors (for ABM simulation) ----
+      # Platform screen doors (站台自动门/屏蔽门): continuous glass-wall
+      # barriers between platform and track zone.  Each side has 24
+      # sliding door segments (width ≈ 1.92 m, interval ≈ 4.88 m) that
+      # open when a train docks.  Default state: CLOSED (obstacle).
+      # ABM toggles: open all doors on one side when train arrives.
+      #
+      # Barrier bounds from IFC elements:
+      #   IfcPlate 基本墙:自动门顶部300装饰:828674  (south, y≈3.75-4.05)
+      #   IfcPlate 基本墙:自动门顶部300装饰:832578  (north, y≈17.45-17.75)
+      # Door segments from IfcDoor 门嵌板_70-100 系列双扇地弹铝门.
+      dynamic_doors:
+        platform_screen_doors:
+          - name: "south_psd"
+            side: south
+            barrier_bounds: [19.83, 3.50, 135.09, 4.10]
+            first_door_x: 20.45
+            second_door_x: 25.26
+            door_count: 24
+            door_width: 1.92
+            door_interval: 4.88
+          - name: "north_psd"
+            side: north
+            barrier_bounds: [19.83, 17.40, 135.09, 17.80]
+            first_door_x: 20.45
+            second_door_x: 25.26
+            door_count: 24
+            door_width: 1.92
+            door_interval: 4.88
+        elevator_doors:
+          # 商业电梯 (commercial elevator) at center of platform.
+          # Shaft IFC bounds: [77.75, 8.31, 79.67, 10.01], area ≈ 2.81 m².
+          # Door opens on the SOUTH face (y ≈ 8.31) toward the walkable zone.
+          # ABM treatment: shaft walls = static obstacle (closed by default);
+          # door face is toggle-edge.  Interior capacity nodes created
+          # separately.
+          - name: "elevator_south_door"
+            shaft_bounds: [77.75, 8.31, 79.67, 10.01]
+            door_face: south            # which face of the shaft has the door
+            door_width: 1.2             # standard elevator door width (m)
+            door_center_x: 78.71       # door centre along x-axis
+            levels: [F1, F3]
+            capacity: 20                # max passengers per car
+
+    F3:
+      forbidden_zones:
+        # === South extensions ===
+        - name: "southwest_extension"
+          bounds: [-14.0, -24.5, 17.0, -0.5]
+        - name: "south_center"
+          bounds: [66.5, -24.5, 101.5, -0.5]
+        # === Left rooms ===
+        - name: "left_rooms_lower"
+          bounds: [-0.9, -0.5, 6.1, 14.7]
+        - name: "left_rooms_upper"
+          bounds: [6.1, -0.5, 13.0, 14.7]
+        # === Center-left (split: south utility < y=5, rooms y=5-14.7) ===
+        - name: "center_left_south"
+          bounds: [13.0, -0.5, 26.0, 5.0]
+        - name: "center_left_rooms"
+          bounds: [13.0, 5.0, 42.6, 14.7]
+        # === Upper band (y > 14.7) ===
+        - name: "upper_left_block"
+          bounds: [0.0, 14.7, 42.6, 22.0]
+        - name: "top_strip_A"
+          bounds: [42.6, 20.0, 65.0, 22.5]
+        - name: "entrance_D_sealed"
+          bounds: [65.0, 20.0, 80.0, 22.5]
+        - name: "top_strip_B"
+          bounds: [80.0, 20.0, 112.0, 22.5]
+        # === Right rooms (split: south landing < y=5, main y=5-14.7) ===
+        - name: "right_rooms_south"
+          bounds: [130.0, -0.5, 146.5, 5.0]
+        - name: "right_rooms_main"
+          bounds: [119.0, 5.0, 146.5, 14.7]
+        - name: "right_rooms_upper"
+          bounds: [119.0, 14.7, 146.5, 22.0]
+        # === Fare gate enclosure walls (close bypass gaps around each gate cluster) ===
+        # Left outbound gate [55.93,0.75,57.24,6.15]: seal south+north openings
+        - name: "left_outbound_south"
+          bounds: [55.93, -0.5, 57.24, 0.75]
+        - name: "left_outbound_north"
+          bounds: [55.93, 6.15, 57.24, 7.5]
+        # Left inbound gate [55.42,16.20,56.73,20.85]: seal south+north openings
+        - name: "left_inbound_south"
+          bounds: [55.42, 13.5, 56.73, 16.20]
+        - name: "left_inbound_north"
+          bounds: [55.42, 20.85, 56.73, 22.0]
+        # Right outbound gate [95.36,2.15,96.66,6.75]: seal south+north openings
+        - name: "right_outbound_south"
+          bounds: [95.36, -0.5, 96.66, 2.15]
+        - name: "right_outbound_north"
+          bounds: [95.36, 6.75, 96.66, 7.5]
+        # Right inbound gate [102.79,15.40,104.09,20.65]: seal south+north openings
+        - name: "right_inbound_south"
+          bounds: [102.79, 13.5, 104.09, 15.40]
+        - name: "right_inbound_north"
+          bounds: [102.79, 20.65, 104.09, 22.0]
+      # Floor patches — ensure entrance areas have floor slab
+      floor_patches:
+        - name: "entrance_D_floor"
+          bounds: [112.0, 18.0, 120.0, 22.5]
+        # SW stair/escalator landing — IFC floor polygon doesn't
+        # extend far enough east at y≈0-2 to cover the escalator
+        # bottom landing.  This patch restores walkable floor
+        # adjacent to the connector entry/exit.
+        - name: "sw_esc_landing"
+          bounds: [39.0, -0.5, 48.0, 2.5]
+        # F3-F4 connector landing zones — ensure floor slab covers the approach
+        # area immediately north of the SW and SE stair/escalator shafts.
+        - name: "sw_connector_floor"
+          bounds: [26.0, 4.0, 55.0, 6.5]
+        - name: "se_connector_floor"
+          bounds: [110.0, 4.0, 130.0, 6.5]
+        # Left unpaid zone corridor — IFC F3 slab has void at escalator shaft
+        # x=53-64, y=7-14, leaving no slab in adjacent x=46-54 corridor.
+        # Floor patch restores slab so grid nodes can be placed.
+        - name: "left_unpaid_corridor"
+          bounds: [46.0, 7.5, 56.0, 14.7]
+        # Right unpaid zone corridor — symmetric to left side
+        - name: "right_unpaid_corridor"
+          bounds: [95.0, 7.5, 120.5, 14.7]
+      # Walkable passages — carve corridors through forbidden zones
+      walkable_passages:
+        # Left scanner approach corridor — the center_left_rooms
+        # forbidden zone (x≤42.6) almost abuts the scanner barrier
+        # (x≤44.0), leaving only a 1.4m-wide gap.  Carve a wider
+        # corridor so floor nodes can populate the approach area.
+        - name: "left_scanner_corridor"
+          bounds: [42.0, 7.5, 44.5, 13.5]
+        # Right scanner approach corridor — the right_rooms_main
+        # forbidden zone covers x>=119 but the security scanner
+        # corridor at x≈118-123 must remain walkable for inbound flow.
+        - name: "right_scanner_corridor"
+          bounds: [118.0, 5.0, 123.0, 14.7]
+        # F3-F4 SW/SE connector landing approaches — carve through room forbidden
+        # zones so the 0.5m corridor immediately north of each stair/escalator
+        # shaft can receive floor nodes (min_clearance 0.25m satisfied).
+        - name: "sw_connector_approach"
+          bounds: [26.0, 4.5, 55.0, 7.0]
+        - name: "se_connector_approach"
+          bounds: [110.0, 4.5, 130.0, 7.0]
+        # Left/right unpaid corridors — carve through any railing obstacles
+        # so pedestrians can traverse the route scanner-exit → inbound gate.
+        - name: "left_unpaid_corridor"
+          bounds: [46.0, 7.5, 56.0, 14.7]
+        - name: "right_unpaid_corridor"
+          bounds: [95.0, 7.5, 120.5, 14.7]
+      # Underground station entrances (地下出入口)
+      entrances:
+        - name: "entrance_D"
+          bounds: [112.0, 18.0, 120.0, 22.0]
+      # ---- Dynamic doors (elevator on F3) ----
+      dynamic_doors:
+        platform_screen_doors: []
+        elevator_doors:
+          - name: "elevator_south_door"
+            shaft_bounds: [77.75, 8.31, 79.67, 10.01]
+            door_face: south
+            door_width: 1.2
+            door_center_x: 78.71
+            levels: [F1, F3]
+            capacity: 20
+        # ---- Fare gate cluster barriers (闸机组 solid-wall + passage nodes) ----
+        # Each group defines the PHYSICAL bounding box of its gate cluster.
+        # The pipeline replaces individual gate IFC obstacles with one solid
+        # wall, then punches virtual passage nodes at evenly-spaced positions.
+        fare_gate_barriers:
+          - name: "left_inbound"
+            barrier_bounds: [55.42, 16.20, 56.73, 20.85]
+            direction: "inbound"
+            gate_axis: "y"
+            paid_side: "east"       # paid zone is east of this barrier
+            passage_count: 5
+          - name: "left_outbound"
+            barrier_bounds: [55.93, 0.75, 57.24, 6.15]
+            direction: "outbound"
+            gate_axis: "y"
+            paid_side: "east"
+            passage_count: 5
+          - name: "right_outbound"
+            barrier_bounds: [95.36, 2.15, 96.66, 6.75]
+            direction: "outbound"
+            gate_axis: "y"
+            paid_side: "west"       # paid zone is west of this barrier
+            passage_count: 5
+          - name: "right_inbound"
+            barrier_bounds: [102.79, 15.40, 104.09, 20.65]
+            direction: "inbound"
+            gate_axis: "y"
+            paid_side: "west"
+            passage_count: 5
+        # ---- Security scanner barriers (安检机组 solid-wall + passage nodes) ----
+        security_scanner_barriers:
+          - name: "left_scanner"
+            barrier_bounds: [44.00, 8.03, 46.05, 12.63]
+            scanner_axis: "y"
+            approach_side: "west"   # passengers approach from west (street side)
+            passage_count: 3
+          - name: "right_scanner"
+            barrier_bounds: [119.85, 8.03, 121.90, 12.63]
+            scanner_axis: "y"
+            approach_side: "west"
+            passage_count: 3
+
+    F4:
+      # Floor patches — SE corner landing around stair/escalator opening
+      # The IFC floor slab has a notch at x>120 in the SE corner where
+      # the stair/escalator shaft penetrates.  In reality a landing
+      # platform surrounds the opening; this patch restores it.
+      floor_patches:
+        - name: "se_corner_landing"
+          bounds: [110.0, -0.5, 134.0, 6.5]
+        # SE corner upper landing — F4 slab void at stairwell shaft extends
+        # above y=6.5 at x=120-131, leaving a gap in the approach corridor.
+        - name: "se_corner_upper"
+          bounds: [110.0, 6.5, 131.0, 14.0]
+        # SW stairwell landing — the IFC slab has no floor beneath the
+        # stairwell void.  In reality a landing platform surrounds the
+        # opening at the F4 level where people step on/off.
+        - name: "sw_stairwell_landing"
+          bounds: [25.0, -0.5, 40.0, 5.0]
+      # Walkable passages — carve corridors through forbidden zones on F4
+      walkable_passages:
+        # SE corner upper corridor — connects entrance_C walkway to SE
+        # stairwell landing; carve through any room-obstacle overlap.
+        - name: "se_corridor_upper"
+          bounds: [110.0, 6.5, 131.0, 14.0]
+      forbidden_zones:
+        # South complex below main building (negative y areas)
+        - name: "south_left_complex"
+          bounds: [-14.5, -29.8, 17.3, -2.6]
+        - name: "south_center_complex"
+          bounds: [66.5, -25.3, 101.5, -0.5]
+        # Left service rooms — enclosed by walls at x=0→6.1, x=6.4→11.5,
+        # x=11.8→16.6, x=16.9→19.2; boundary wall at y≈14.7
+        - name: "left_service_rooms_A"
+          bounds: [-0.9, -2.6, 6.1, 14.4]
+        - name: "left_service_rooms_B"
+          bounds: [6.4, -0.1, 11.5, 14.7]
+        - name: "left_service_rooms_C"
+          bounds: [11.8, -1.7, 19.2, 10.9]
+        - name: "left_upper_rooms"
+          bounds: [-1.0, 14.4, 21.0, 26.0]
+        # NW entrance area is sealed (walls at x≈20.3 and x≈24.5)
+        - name: "nw_entrance_closed"
+          bounds: [20.0, 21.6, 25.0, 26.0]
+        # Right service rooms — split into upper (above y≈7 wall) and
+        # lower (east of escalator landing) to keep SE landing open.
+        - name: "right_service_block_upper"
+          bounds: [131.0, 7.0, 146.5, 23.3]
+        - name: "right_service_block_lower"
+          bounds: [134.0, -3.0, 146.5, 7.0]
+        # Right upper room block (walls at x=131.4→137.0)
+        - name: "right_upper_room"
+          bounds: [131.0, 13.8, 142.6, 23.0]
+      # Thin partition walls / oversized slab openings to remove
+      obstacle_removals:
+        - name: "opening_1"
+          bounds: [42.0, -0.5, 43.0, 7.0]
+        - name: "opening_2"
+          bounds: [48.0, -0.5, 49.0, 7.0]
+        - name: "opening_3"
+          bounds: [109.0, -0.5, 110.0, 7.5]
+        - name: "opening_4"
+          bounds: [115.0, -0.5, 116.5, 7.0]
+        # SE stairwell opening — the IFC slab void is a single large
+        # obstacle covering both stair + escalator openings.  The
+        # connector-footprint exclusion already prevents floor nodes
+        # on the shaft; removing the oversized obstacle lets the
+        # landing platform be populated with walkable nodes.
+        - name: "se_stairwell_opening"
+          bounds: [120.0, -0.5, 131.5, 5.0]
+        # SE stairwell upper void — same slab-void obstacle may extend
+        # above y=5; remove it so the se_corner_upper floor patch works.
+        - name: "se_stairwell_upper"
+          bounds: [120.0, 5.0, 131.5, 14.0]
+        # SW stairwell opening — same pattern: a large IFC slab-void
+        # obstacle (≈39 m²) covers both the stair and escalator shaft.
+        # Remove it so the floor_patch landing can become walkable.
+        - name: "sw_stairwell_opening"
+          bounds: [29.0, -0.5, 39.5, 5.0]
+      # Station exits (地面出入口) — gaps in top boundary wall
+      # NW gap (x≈21-24.5) is sealed → forbidden zone above.
+      # Gap x=25-28.6 is narrow service gap, not a public exit.
+      # Entrance A: gap between pillar x=29.1 and I-wall x=33.7 (~4.6 m)
+      # Entrance B: large open span x=61 to x=83 (~22 m, only columns)
+      # Entrance C: gap between wall/pillars x=115.0 and x=121.0
+      entrances:
+        - name: "entrance_A"
+          bounds: [29.1, 22.3, 33.7, 26.0]
+        - name: "entrance_B"
+          bounds: [61.0, 21.5, 83.0, 26.0]
+        - name: "entrance_C"
+          bounds: [115.0, 22.3, 121.0, 24.4]
+
+# --- Grid Sampling ---
+# Design rationale:
+#   grid_resolution_m = 0.5 m  ≈ human shoulder width (~0.45 m) + small margin.
+#   min_clearance_m   = 0.25 m ≈ agent body radius (simulation.agent_radius_m).
+#   Fare gates are ~1.31 × 0.43 m  (thin passage), security scanners ~1.2 × 4.6 m.
+#   Railings are typically ~11.7 × 0.25 m (long, very thin).
+#   Walls are ~0.2-0.3 m thick.  Grid must resolve these narrow obstacles.
+sampling:
+  grid_resolution_m: 0.5         # Grid spacing in metres  (≈ shoulder width)
+  min_clearance_m: 0.25          # Minimum distance to obstacle for usable node
+  exclude_stair_footprints: true # Remove floor nodes overlapping stair openings
+  exclude_connector_buffer_m: 0.3  # Buffer around connector footprints
+  control_point_buffer_m: 0.15     # Extra buffer around gates / scanners
+
+# --- Blind Path (tactile paving / 盲道) Tagging ---
+blind_path:
+  guide_bridge_m: 2.0       # morphological bridge radius; must span ~4 m inter-tile gaps
+  guide_expand_m: 0.15      # initial guide tile footprint expansion before bridging
+  warning_expand_m: 0.10    # warning (dot-pattern) tile footprint expansion
+  capture_tol_m: 0.20       # catch grid nodes within this distance of tagged strip
+  min_component_nodes: 1    # keep all guide clusters (set >1 to prune tiny orphans)
+
+# --- Connector Parameters ---
+connectors:
+  stair:
+    dz_step_m: 0.18              # Vertical step height for chain synthesis
+    capacity: 4                  # Max simultaneous agents on one stair
+    step_capacity: 2             # Max agents on a single stair step platform
+    speed_factor: 0.7            # Walking speed multiplier on stairs
+    bidirectional: true
+    # IFC element IDs to exclude from stair chain extraction.
+    # These are non-public or service stairs that should not appear
+    # as navigation connectors.
+    element_blacklist:
+      - "710029"   # emergency exit below platform (NW corner, z<0)
+      - "710178"   # emergency exit below platform (SE corner, z<0)
+      - "710253"   # emergency exit below platform (NE corner, z<0)
+      - "804151"   # center F2 maintenance staircase entry
+      - "805886"   # center F2 maintenance staircase (extends up into F3 entrance-D area)
+  escalator:
+    speed_ms: 0.5                # Escalator belt speed (m/s)
+    capacity: 8                  # Max agents on one escalator
+    dz_step_m: 0.40              # Escalator step riser height (~0.4 m)
+    step_capacity: 2             # Max agents on a single escalator step
+    directional: true            # One-way (configurable per instance)
+    default_direction: "up"      # "up" or "down"
+  elevator:
+    capacity_batch: 20           # Max agents per elevator car
+    dwell_time_s: 15.0           # Door open/close + loading time
+    travel_time_s: 30.0          # Floor-to-floor travel time
+    bidirectional: true
+  fare_gate:
+    throughput_s: 2.0            # Seconds per person through gate
+    queue_capacity: 15           # Max queue length
+    bidirectional: false         # Entry-only or exit-only
+
+# --- Graph Construction ---
+graph:
+  neighbor_connectivity: 8       # 4 or 8 connected grid
+  los_check: true                # Line-of-sight obstacle check for edges
+  snap_radius_m: 1.0             # Snap connector endpoints to floor nodes
+  snap_radius_fallback_m: 2.0
+  prune_to_largest_cc: true      # Keep only largest connected component
+  edge_weight: "length_3d"       # "length_2d", "length_3d", or "travel_time"
+  prune_dangling_stubs: true     # Remove deg=1 floor nodes not at entrances
+  blind_path_link_factor: 1.5    # Connect blind-guide nodes within factor×grid_res
+
+# --- Routing ---
+routing:
+  algorithm: "dijkstra"          # "dijkstra", "astar", "bfs"
+  weight_key: "travel_time"
+  # Connector penalties (additive seconds)
+  connector_penalties:
+    stair: 5.0                   # Extra seconds penalty for using stairs
+    escalator: 2.0
+    elevator: 30.0               # Includes wait time
+    fare_gate: 3.0
+
+# --- Simulation ---
+simulation:
+  n_agents: 200
+  dt_s: 0.5                     # Time step
+  T_s: 600                      # Simulation horizon
+  seed: 42
+  walking_speed_ms: 1.2
+  agent_radius_m: 0.25
+  # Agent heterogeneity
+  elderly_ratio: 0.2
+  elderly_speed_range: [0.55, 0.75]    # Fraction of base speed
+  normal_speed_range: [0.95, 1.05]
+  # Dynamic routing
+  routing_mode: "static"         # "static" or "dynamic"
+  replan_interval_s: 15.0        # Used only when replan_timer_enabled: true
+  replan_wait_threshold_s: 2.0   # Replan when waiting >= this many seconds
+  replan_timer_enabled: false    # false = only replan when blocked (realistic)
+  congestion_alpha: 2.0          # Weight multiplier at full congestion (2× base)
+  congestion_decay: 0.82
+  congestion_max_hops: 12
+  # OD flows — two directions only:
+  #   坐地铁 (boarding):  ENTRANCE nodes (5 station gates) → PLATFORM (train doors)
+  #   出站   (alighting): PLATFORM nodes (train doors)    → EXIT (station gates)
+  flows:
+    "ENTRANCE->PLATFORM": 0.5
+    "PLATFORM->EXIT": 0.5
+  # Stair capacity gate
+  stair_capacity: 4
+
+# --- Visualization ---
+visualization:
+  dpi: 180
+  figsize_single: [10, 8]
+  figsize_comparison: [14, 6]
+  gif_fps: 4
+  gif_dt_frame_s: 2.0
+  colormap_elevation: "plasma"
+  colormap_clearance: "viridis"
+  colormap_occupancy: "Reds"
+
+# --- Output ---
+output:
+  base_dir: "outputs"
+  step_dirs:
+    step0: "outputs/step0_data"
+    step1: "outputs/step1_geometry"
+    step2: "outputs/step2_sampling"
+    step3: "outputs/step3_graph"
+    step4: "outputs/step4_routing"
+    step5: "outputs/step5_simulation"
+    step6: "outputs/step6_evaluation"

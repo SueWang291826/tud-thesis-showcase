@@ -1,0 +1,217 @@
+# ==============================================================================
+# Semantic Filtering Policy for IFC Preprocessing
+# ==============================================================================
+#
+# This file defines the rule-based semantic classification policy for
+# categorising IFC objects into functional groups relevant to indoor navigation.
+#
+# Categories:
+#   walkable_support   - Floor slabs, ground surfaces that define walkable area
+#   obstacle           - Walls, columns, furniture that block movement
+#   vertical_connector - Stairs, ramps, elevators, escalators
+#   opening_passage    - Doors, gates, openings that allow passage
+#   railing_barrier    - Railings, barriers that constrain but don't fully block
+#   structural         - Beams, foundations, structural elements (not walkable)
+#   ceiling_roof       - Ceilings, roofs (overhead, not relevant to 2D nav)
+#   ignorable          - MEP, annotations, abstract elements
+#   uncertain          - Cannot be confidently classified; needs manual review
+#
+# Rule priority: class_rules > name_rules > predefined_type_rules > default
+#
+# Each rule can specify:
+#   category: target category
+#   priority: higher priority overrides lower (default=0)
+#   condition: optional extra conditions (storey, has_geometry, etc.)
+
+# ==============================
+# Rules based on IFC class
+# ==============================
+class_rules:
+  # --- Walkable support ---
+  IfcSlab:
+    category: "walkable_support"
+    note: "Floor slabs - primary walkable surface candidates"
+  IfcRamp:
+    category: "vertical_connector"
+    note: "Ramps connecting levels"
+  IfcRampFlight:
+    category: "vertical_connector"
+    note: "Individual ramp flights"
+
+  # --- Obstacles ---
+  IfcWall:
+    category: "obstacle"
+    note: "Walls block pedestrian movement"
+  IfcWallStandardCase:
+    category: "obstacle"
+    note: "Standard case walls"
+  IfcColumn:
+    category: "obstacle"
+    note: "Columns are point obstacles"
+  IfcCurtainWall:
+    category: "obstacle"
+    note: "Curtain walls - glass barriers"
+  IfcPlate:
+    category: "obstacle"
+    note: "Plates - often glass panels or barriers"
+
+  # --- Vertical connectors ---
+  IfcStair:
+    category: "vertical_connector"
+    note: "Staircase assemblies"
+  IfcStairFlight:
+    category: "vertical_connector"
+    note: "Individual stair flights"
+
+  # --- Openings and passages ---
+  IfcDoor:
+    category: "opening_passage"
+    note: "Doors allow passage between zones"
+
+  # --- Railings and barriers ---
+  IfcRailing:
+    category: "railing_barrier"
+    note: "Railings constrain movement paths"
+
+  # --- Structural (non-walkable) ---
+  IfcBeam:
+    category: "structural"
+    note: "Beams - overhead structural"
+  IfcFooting:
+    category: "structural"
+    note: "Foundations"
+  IfcPile:
+    category: "structural"
+    note: "Foundation piles"
+  IfcMember:
+    category: "structural"
+    note: "Generic structural members"
+
+  # --- Ceiling and roof ---
+  IfcCovering:
+    category: "ceiling_roof"
+    note: "Coverings - often ceiling tiles"
+  IfcRoof:
+    category: "ceiling_roof"
+    note: "Roof elements"
+
+  # --- Ignorable ---
+  IfcAnnotation:
+    category: "ignorable"
+    note: "Annotations have no physical presence"
+  IfcSite:
+    category: "ignorable"
+    note: "Site container"
+  IfcBuilding:
+    category: "ignorable"
+    note: "Building container"
+  IfcBuildingStorey:
+    category: "ignorable"
+    note: "Storey container"
+  IfcProject:
+    category: "ignorable"
+    note: "Project container"
+
+  # --- Uncertain: IfcBuildingElementProxy is the main catch-all ---
+  IfcBuildingElementProxy:
+    category: "uncertain"
+    note: "Proxy objects require individual analysis by name/type"
+
+# ==============================
+# Rules based on object name patterns (regex, case-insensitive)
+# Applied to IfcBuildingElementProxy and other uncertain objects.
+# ==============================
+name_rules:
+  # --- Vertical connectors ---
+  - pattern: "(?i)(elevator|lift|电梯)"
+    category: "vertical_connector"
+    note: "Elevator identified by name"
+  - pattern: "(?i)(escalator|扶梯|自动扶梯)"
+    category: "vertical_connector"
+    note: "Escalator identified by name"
+  - pattern: "(?i)(stair|楼梯)"
+    category: "vertical_connector"
+    note: "Stair identified by name"
+  - pattern: "(?i)(ramp|坡道)"
+    category: "vertical_connector"
+    note: "Ramp identified by name"
+
+  # --- Openings and passages ---
+  - pattern: "(?i)(gate|闸机|检票|门)"
+    category: "opening_passage"
+    note: "Gate or ticket barrier identified by name"
+  - pattern: "(?i)(turnstile)"
+    category: "opening_passage"
+    note: "Turnstile"
+
+  # --- Obstacles ---
+  - pattern: "(?i)(column|柱|立柱)"
+    category: "obstacle"
+    note: "Column-like proxy"
+  - pattern: "(?i)(wall|墙)"
+    category: "obstacle"
+    note: "Wall-like proxy"
+  - pattern: "(?i)(bench|seat|座椅|长椅)"
+    category: "obstacle"
+    note: "Seating furniture as obstacle"
+  - pattern: "(?i)(vending|自动售货|售票)"
+    category: "obstacle"
+    note: "Vending/ticket machine as obstacle"
+  - pattern: "(?i)(screen|屏蔽|站台门|PSD)"
+    category: "obstacle"
+    note: "Platform screen door as obstacle/barrier"
+
+  # --- Railing/barrier ---
+  - pattern: "(?i)(railing|rail|栏杆|护栏|handrail|扶手)"
+    category: "railing_barrier"
+    note: "Railing identified by name"
+  - pattern: "(?i)(barrier|围栏|隔离)"
+    category: "railing_barrier"
+    note: "Barrier identified by name"
+
+  # --- Walkable support ---
+  - pattern: "(?i)(floor|地面|地板|地坪)"
+    category: "walkable_support"
+    note: "Floor surface identified by name"
+  - pattern: "(?i)(platform|站台板)"
+    category: "walkable_support"
+    note: "Platform slab identified by name"
+
+  # --- Ceiling/roof ---
+  - pattern: "(?i)(ceiling|天花|吊顶)"
+    category: "ceiling_roof"
+    note: "Ceiling identified by name"
+  - pattern: "(?i)(roof|屋顶)"
+    category: "ceiling_roof"
+    note: "Roof identified by name"
+
+  # --- Ignorable ---
+  - pattern: "(?i)(pipe|管|duct|风管|cable|电缆|wire|线)"
+    category: "ignorable"
+    note: "MEP element identified by name"
+  - pattern: "(?i)(light|灯|照明)"
+    category: "ignorable"
+    note: "Lighting fixture"
+  - pattern: "(?i)(sign|标志|标识|标牌)"
+    category: "ignorable"
+    note: "Signage"
+
+# ==============================
+# Rules based on PredefinedType
+# ==============================
+predefined_type_rules:
+  FLOOR:
+    category: "walkable_support"
+    note: "Slab with FLOOR predefined type"
+  BASESLAB:
+    category: "structural"
+    note: "Base slab - structural foundation"
+  ROOF:
+    category: "ceiling_roof"
+    note: "Roof slab"
+  LANDING:
+    category: "vertical_connector"
+    note: "Stair landing"
+  NOTDEFINED:
+    category: "uncertain"
+    note: "Predefined type not defined"

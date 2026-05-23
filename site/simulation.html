@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABM Simulation — TUD-Station</title>
+  <meta name="description" content="Agent-Based pedestrian simulation across three scenarios: Static, Dynamic train arrival, and Wheelchair accessibility. 200 Mesa agents with real-time congestion feedback.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .scenario-tab-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .scenario-tab {
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--muted);
+      transition: all .15s;
+    }
+    .scenario-tab:hover { border-color: var(--accent); color: var(--accent); }
+    .scenario-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  </style>
+</head>
+<body>
+
+<button id="nav-toggle" aria-label="Toggle navigation"></button>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">TUD-Station</div>
+    <div class="logo-sub">MSc Thesis · BIM × LLM × Navigation</div>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a href="index.html"><span class="nav-icon">🏠</span>Home</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">System</div>
+      <a href="pipeline.html"><span class="nav-icon">⚙️</span>Pipeline (6 Steps)</a>
+      <a href="navgraph.html"><span class="nav-icon">🗺️</span>Navigation Graph</a>
+      <a href="simulation.html"><span class="nav-icon">🚶</span>ABM Simulation</a>
+      <a href="agent.html"><span class="nav-icon">🤖</span>LLM Agent</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Outcomes</div>
+      <a href="results.html"><span class="nav-icon">📊</span>Results &amp; Evaluation</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">On This Page</div>
+      <a href="#abm-engine"><span class="nav-icon">·</span>ABM Engine</a>
+      <a href="#scenario-a"><span class="nav-icon">·</span>Scenario A — Static</a>
+      <a href="#scenario-b"><span class="nav-icon">·</span>Scenario B — Dynamic</a>
+      <a href="#scenario-c"><span class="nav-icon">·</span>Scenario C — Wheelchair</a>
+      <a href="#comparison"><span class="nav-icon">·</span>Scenario Comparison</a>
+      <a href="#interactive-3d"><span class="nav-icon">·</span>3D Simulations</a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">TU Delft · MSc Architecture · 2025</div>
+</aside>
+
+<!-- ── MAIN ──────────────────────────────────────────────────────────── -->
+<main id="main">
+
+  <div class="page-header">
+    <div class="breadcrumb"><a href="index.html">TUD-Station</a> / ABM Simulation</div>
+    <h1>🚶 Agent-Based Pedestrian Simulation</h1>
+    <p class="subtitle">
+      200 Mesa agents navigate three distinct scenarios — from steady-state baseline flows to
+      dynamic train-arrival events and wheelchair accessibility routing —
+      with real-time congestion feedback and route replanning.
+    </p>
+    <div class="tag-row" style="margin-top:14px;">
+      <span class="tag tag-blue">200 agents</span>
+      <span class="tag tag-green">Mesa ABM</span>
+      <span class="tag tag-orange">3 scenarios</span>
+      <span class="tag tag-purple">Dijkstra replanning</span>
+    </div>
+  </div>
+
+  <!-- ABM ENGINE -->
+  <section id="abm-engine">
+    <h2><span class="section-num">01</span> Simulation Engine</h2>
+    <p class="section-desc">Built on the Mesa framework; each agent is a reactive navigator on the 2.5D graph.</p>
+
+    <div class="card-grid card-grid-4 reveal">
+      <div class="stat-card accent">
+        <div class="stat-icon">🤖</div>
+        <div class="stat-value">200</div>
+        <div class="stat-label">Agents per Scenario</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">🔁</div>
+        <div class="stat-value">1 s</div>
+        <div class="stat-label">Tick Resolution</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🏎️</div>
+        <div class="stat-value">1.2 m/s</div>
+        <div class="stat-label">Base Walk Speed</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">♿</div>
+        <div class="stat-value">0.8 m/s</div>
+        <div class="stat-label">Wheelchair Speed</div>
+      </div>
+    </div>
+
+    <div class="card reveal" style="margin-top:20px;">
+      <h3 style="font-size:14px; margin-bottom:12px;">Agent Lifecycle</h3>
+      <div class="timeline" style="margin-top:0;">
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">SPAWN</span><span class="tl-title">Assign origin/destination from OD matrix</span></div>
+          <div class="tl-body"><p>Each agent is assigned a home region (origin) and a destination region sampled from the pre-computed OD demand matrix. Initial position is randomised within the origin region.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">PLAN</span><span class="tl-title">Compute Dijkstra route</span></div>
+          <div class="tl-body"><p>Dijkstra on the full graph with current edge weights (base travel time + congestion penalty). Route stored as a node-ID queue.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">MOVE</span><span class="tl-title">Step along route; broadcast position</span></div>
+          <div class="tl-body"><p>Each tick: advance by one edge (or wait if capacity exceeded). Broadcast current node to the congestion collector. Platform Screen Doors block movement if closed.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">REPLAN</span><span class="tl-title">Re-route if edge weight spikes</span></div>
+          <div class="tl-body"><p>If the next edge's congestion factor exceeds <code>replan_threshold</code> (default 0.7), the agent discards its current route and replans from the current position. Replanning is throttled to avoid oscillation.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-header"><span class="tl-step">ARRIVE</span><span class="tl-title">Record travel time; agent exits</span></div>
+          <div class="tl-body"><p>On reaching the destination node, the agent logs elapsed ticks (= seconds), connector usage, and replan count, then is removed from the simulation.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENARIO A -->
+  <section id="scenario-a">
+    <h2><span class="section-num">02</span> Scenario A — Static Baseline</h2>
+    <p class="section-desc">No dynamic events. 200 agents flow through the station under normal operating conditions.</p>
+
+    <div class="card-grid card-grid-4 reveal">
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value count-up" data-target="98.5" data-suffix="%">0%</div>
+        <div class="stat-label">Arrival Rate</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-value count-up" data-target="160.2" data-suffix="s">0s</div>
+        <div class="stat-label">Avg Travel Time</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🌡️</div>
+        <div class="stat-value">0.41</div>
+        <div class="stat-label">Peak Congestion</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-value">0</div>
+        <div class="stat-label">Replan Events</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/heatmap_scenA.png" alt="Scenario A heatmap" loading="lazy">
+        <div class="img-caption">Agent density heatmap — Scenario A (Static)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/small_multiples_scenA.png" alt="Scenario A small multiples" loading="lazy">
+        <div class="img-caption">Time-step small multiples — agent distribution evolution</div>
+      </div>
+    </div>
+
+    <div class="iframe-wrap reveal" style="margin-top:20px;">
+      <iframe src="interactive/interactive_sim_static.html" height="560" title="Static simulation"></iframe>
+      <div class="iframe-label">🚶 Interactive Scenario A — Static pedestrian flow (2D)</div>
+    </div>
+  </section>
+
+  <!-- SCENARIO B -->
+  <section id="scenario-b">
+    <h2><span class="section-num">03</span> Scenario B — Dynamic (Train Arrival)</h2>
+    <p class="section-desc">A train arrival event fires at tick 120 — platform screen doors open, 40 new agents board, congestion spikes, routes replan.</p>
+
+    <div class="card-grid card-grid-4 reveal">
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value count-up" data-target="97.2" data-suffix="%">0%</div>
+        <div class="stat-label">Arrival Rate</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-value count-up" data-target="178.4" data-suffix="s">0s</div>
+        <div class="stat-label">Avg Travel Time</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🌡️</div>
+        <div class="stat-value">0.78</div>
+        <div class="stat-label">Peak Congestion</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-value count-up" data-target="312">0</div>
+        <div class="stat-label">Replan Events</div>
+      </div>
+    </div>
+
+    <div class="callout callout-orange reveal" style="margin-top:16px;">
+      <strong>Train Arrival Event Sequence</strong>
+      At tick 120: PSD open → 40 egress agents spawn on platform → congestion rises
+      to 0.78 → 312 replan events as agents divert from primary staircase to escalators
+      → PSDs close at tick 180 → congestion dissipates by tick 240.
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:16px;">
+      <div class="img-card">
+        <img src="img/heatmap_scenB.png" alt="Scenario B heatmap" loading="lazy">
+        <div class="img-caption">Agent density heatmap — Scenario B (Dynamic)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/replan_timeline.png" alt="Replan timeline" loading="lazy">
+        <div class="img-caption">Replan event timeline — spike at tick 120 (train arrival)</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/edge_throughput_scenB.png" alt="Edge throughput B" loading="lazy">
+        <div class="img-caption">Edge throughput over time — Scenario B</div>
+      </div>
+      <div class="img-card">
+        <img src="img/stair_queue_timeline.png" alt="Stair queue timeline" loading="lazy">
+        <div class="img-caption">Queue length at primary staircase during train arrival</div>
+      </div>
+    </div>
+
+    <div class="iframe-wrap reveal" style="margin-top:20px;">
+      <iframe src="interactive/interactive_sim_dynamic.html" height="560" title="Dynamic simulation"></iframe>
+      <div class="iframe-label">🚶 Interactive Scenario B — Dynamic flow with train arrival event (2D)</div>
+    </div>
+  </section>
+
+  <!-- SCENARIO C -->
+  <section id="scenario-c">
+    <h2><span class="section-num">04</span> Scenario C — Wheelchair Accessibility</h2>
+    <p class="section-desc">Agents are constrained to use lifts only for floor transitions; measures accessibility penalty vs. baseline.</p>
+
+    <div class="card-grid card-grid-4 reveal">
+      <div class="stat-card green">
+        <div class="stat-icon">♿</div>
+        <div class="stat-value count-up" data-target="94.3" data-suffix="%">0%</div>
+        <div class="stat-label">Arrival Rate</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-value count-up" data-target="224.7" data-suffix="s">0s</div>
+        <div class="stat-label">Avg Travel Time</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🏋️</div>
+        <div class="stat-value">+40.4%</div>
+        <div class="stat-label">vs. Baseline</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">🛗</div>
+        <div class="stat-value">4</div>
+        <div class="stat-label">Lifts Available</div>
+      </div>
+    </div>
+
+    <div class="callout callout-purple reveal" style="margin-top:16px;">
+      <strong>Key Finding — Accessibility Bottleneck</strong>
+      The 40.4% travel-time increase for wheelchair-constrained agents stems primarily from
+      lift capacity (8 persons) and dwell time (8 s), creating queues of up to 6 agents
+      during peak periods. The LLM agent can query <code>find_connector(type="lift")</code>
+      to identify the least congested lift in real time.
+    </div>
+
+    <div class="img-grid img-grid-3 reveal" style="margin-top:16px;">
+      <div class="img-card">
+        <img src="img/wheelchair_1.png" alt="Wheelchair route 1" loading="lazy">
+        <div class="img-caption">Wheelchair route — F1 platform to F3 concourse via lift</div>
+      </div>
+      <div class="img-card">
+        <img src="img/wheelchair_2.png" alt="Wheelchair route 2" loading="lazy">
+        <div class="img-caption">Lift queue evolution during peak period</div>
+      </div>
+      <div class="img-card">
+        <img src="img/wheelchair_3.png" alt="Wheelchair route 3" loading="lazy">
+        <div class="img-caption">F3 → F4 via accessible lift (transport level egress)</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/heatmap_scenC.png" alt="Scenario C heatmap" loading="lazy">
+        <div class="img-caption">Agent density heatmap — Scenario C (Wheelchair)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/elderly_vs_normal.png" alt="Elderly vs normal" loading="lazy">
+        <div class="img-caption">Travel time: wheelchair-constrained vs. unrestricted agents</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENARIO COMPARISON -->
+  <section id="comparison">
+    <h2><span class="section-num">05</span> Scenario Comparison</h2>
+    <p class="section-desc">Side-by-side key metrics across all three scenarios.</p>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Scenario A<br><small>Static Baseline</small></th>
+            <th>Scenario B<br><small>Dynamic</small></th>
+            <th>Scenario C<br><small>Wheelchair</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Arrival rate</td>
+            <td><span class="text-green fw-600">98.5%</span></td>
+            <td>97.2%</td>
+            <td>94.3%</td>
+          </tr>
+          <tr>
+            <td>Avg travel time</td>
+            <td>160.2 s</td>
+            <td>178.4 s <span class="text-orange text-xs">(+11%)</span></td>
+            <td>224.7 s <span class="text-red text-xs">(+40%)</span></td>
+          </tr>
+          <tr>
+            <td>Peak congestion factor</td>
+            <td>0.41</td>
+            <td><span class="text-orange fw-600">0.78</span></td>
+            <td>0.39</td>
+          </tr>
+          <tr>
+            <td>Replan events</td>
+            <td>0</td>
+            <td><span class="text-orange fw-600">312</span></td>
+            <td>18</td>
+          </tr>
+          <tr>
+            <td>Connector most used</td>
+            <td>Main staircase</td>
+            <td>Escalators (post-event)</td>
+            <td>Lift bank A</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:20px;">
+      <div class="img-card">
+        <img src="img/stats_comparison.png" alt="Stats comparison" loading="lazy">
+        <div class="img-caption">Bar-chart comparison of key metrics across three scenarios</div>
+      </div>
+      <div class="img-card">
+        <img src="img/travel_time_boxplot.png" alt="Travel time boxplot" loading="lazy">
+        <div class="img-caption">Travel time distribution (box plot) — all three scenarios</div>
+      </div>
+    </div>
+
+    <div class="img-grid img-grid-2 reveal" style="margin-top:12px;">
+      <div class="img-card">
+        <img src="img/flow_diff_A_vs_B.png" alt="Flow diff A vs B" loading="lazy">
+        <div class="img-caption">Flow difference map: Scenario A vs. B (dynamic shift)</div>
+      </div>
+      <div class="img-card">
+        <img src="img/flow_diff_B_vs_C.png" alt="Flow diff B vs C" loading="lazy">
+        <div class="img-caption">Flow difference map: Scenario B vs. C (accessibility routes)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D SIMULATIONS -->
+  <section id="interactive-3d">
+    <h2><span class="section-num">06</span> 3D Interactive Simulations</h2>
+    <p class="section-desc">Full 3D replay of agent movements — drag to rotate, scroll to zoom.</p>
+
+    <h3>3D Static Simulation</h3>
+    <div class="iframe-wrap reveal">
+      <iframe src="interactive/interactive_3d_sim_static.html" height="620" title="3D static simulation"></iframe>
+      <div class="iframe-label">🏛️ 3D Scenario A — Static pedestrian flow (rotate to explore)</div>
+    </div>
+
+    <h3 style="margin-top:28px;">3D Dynamic Simulation</h3>
+    <div class="iframe-wrap reveal">
+      <iframe src="interactive/interactive_3d_sim_dynamic.html" height="620" title="3D dynamic simulation"></iframe>
+      <div class="iframe-label">🏛️ 3D Scenario B — Dynamic flow with train arrival event</div>
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/js/nav.js"></script>
+</body>
+</html>
