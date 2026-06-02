@@ -634,23 +634,23 @@ p {
 }
 
 .swatch-sim-static-normal {
-  background: #4da3ff;
+  background: #2ef8ff;
 }
 
 .swatch-sim-static-elderly {
-  background: #34f5ff;
+  background: #d4ff3b;
 }
 
 .swatch-sim-dynamic-normal {
-  background: #c8ff32;
+  background: #ff9b22;
 }
 
 .swatch-sim-dynamic-elderly {
-  background: #ff9a1f;
+  background: #ff4ddb;
 }
 
 .swatch-replan {
-  background: #ff4df8;
+  background: linear-gradient(135deg, #fff3b0 0%, #ffcf5a 45%, #ff9f1c 100%);
 }
 
 .swatch-eval-relief {

@@ -494,7 +494,7 @@ function buildLegend(stageId: StageDefinition['id']): { title: string; items: Ar
         { swatch: 'swatch-sim-static-elderly', label: 'Static scenario - elderly agents' },
         { swatch: 'swatch-sim-dynamic-normal', label: 'Dynamic scenario - normal agents' },
         { swatch: 'swatch-sim-dynamic-elderly', label: 'Dynamic scenario - elderly agents' },
-        { swatch: 'swatch-replan', label: 'Replanning trigger marker' },
+        { swatch: 'swatch-replan', label: 'Replan alert (!)' },
         { swatch: 'swatch-route', label: 'Reference route' },
       ],
     }

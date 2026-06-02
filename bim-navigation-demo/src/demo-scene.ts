@@ -65,29 +65,29 @@ interface ScenarioDensityCell {
   density: number
 }
 
-interface SimulationPointSet {
+interface SimulationPointCloud {
   geometry: THREE.BufferGeometry
   positions: Float32Array
-  glow: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>
+  colors: Float32Array
   core: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>
+  glow: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>
 }
 
 const SIMULATION_SCENARIO_COLORS = {
   static: {
-    normal: new THREE.Color('#34f5ff'),
-    elderly: new THREE.Color('#c8ff32'),
+    normal: new THREE.Color('#2ef8ff'),
+    elderly: new THREE.Color('#d4ff3b'),
   },
   dynamic: {
-    normal: new THREE.Color('#ff9a1f'),
-    elderly: new THREE.Color('#ff4df8'),
+    normal: new THREE.Color('#ff9b22'),
+    elderly: new THREE.Color('#ff4ddb'),
   },
 } as const
 
-const SIMULATION_POINT_SCALE = 2.8
-const SIMULATION_ELDERLY_SCALE = 3.8
-const SIMULATION_GLOW_SCALE = 2.1
-const REPLAN_MARKER_LIFETIME_FRAMES = 8
-const REPLAN_MARKER_HEIGHT = 4.1
+const SIMULATION_POINT_SCALE = 2.6
+const SIMULATION_GLOW_SCALE = 1.5
+const REPLAN_MARKER_LIFETIME_FRAMES = 6
+const REPLAN_MARKER_HEIGHT = 3.5
 const REPLAN_PREVIEW_LEAD_SECONDS = 3
 
 function isStaticScenario(scenario: SimulationScenario): boolean {
@@ -116,35 +116,22 @@ function createReplanMarkerTexture(): THREE.CanvasTexture {
   }
 
   context.clearRect(0, 0, canvas.width, canvas.height)
-  context.shadowColor = 'rgba(255, 94, 32, 0.55)'
-  context.shadowBlur = 18
-  context.fillStyle = '#ffe66d'
-  context.beginPath()
-  context.roundRect(42, 24, 96, 104, 30)
-  context.fill()
-  context.beginPath()
-  context.moveTo(90, 126)
-  context.lineTo(76, 154)
-  context.lineTo(106, 132)
-  context.closePath()
-  context.fill()
+  context.shadowColor = 'rgba(255, 179, 71, 0.85)'
+  context.shadowBlur = 22
+  context.translate(90, 78)
+  context.rotate(Math.PI / 4)
+  context.lineWidth = 12
+  context.strokeStyle = '#ff9f1c'
+  context.strokeRect(-34, -34, 68, 68)
+  context.fillStyle = 'rgba(8, 17, 31, 0.28)'
+  context.fillRect(-28, -28, 56, 56)
+  context.setTransform(1, 0, 0, 1, 0, 0)
   context.shadowBlur = 0
-  context.lineWidth = 10
-  context.strokeStyle = '#ff8c42'
-  context.beginPath()
-  context.roundRect(42, 24, 96, 104, 30)
-  context.stroke()
-  context.beginPath()
-  context.moveTo(90, 126)
-  context.lineTo(76, 154)
-  context.lineTo(106, 132)
-  context.closePath()
-  context.stroke()
-  context.fillStyle = '#0b1420'
-  context.font = '900 100px Segoe UI, sans-serif'
+  context.fillStyle = '#fff3b0'
+  context.font = '900 92px Segoe UI, sans-serif'
   context.textAlign = 'center'
   context.textBaseline = 'middle'
-  context.fillText('!', 90, 74)
+  context.fillText('!', 90, 84)
 
   const texture = new THREE.CanvasTexture(canvas)
   texture.needsUpdate = true
@@ -497,7 +484,7 @@ export class DemoScene {
   private autoRotateEnabled = false
   private modelStoreyGroups: THREE.Group[] = []
   private currentScenario: SimulationScenario | null = null
-  private simulationPointSets: Partial<Record<'normal' | 'elderly', SimulationPointSet>> = {}
+  private simulationPointCloud: SimulationPointCloud | null = null
   private simulationMarkerGroup: THREE.Group | null = null
   private simulationReplanMaterial: THREE.SpriteMaterial | null = null
   private simulationReplanEventsByFrame = new Map<number, Set<string>>()
@@ -649,49 +636,25 @@ export class DemoScene {
     this.status.simulationMode = scenario.kind
     this.layers.simulation.clear()
     this.layers.evaluation.clear()
-    this.simulationPointSets = {}
+    this.simulationPointCloud = null
     this.simulationMarkerGroup = null
     this.simulationReplanEventsByFrame = this.indexReplanEvents(scenario)
     this.playing = false
 
-    const maxAgents = scenario.frames.reduce(
-      (result, frame) => {
-        const counts = { normal: 0, elderly: 0 }
-        for (const agent of frame.agents) {
-          counts[normalizeSimulationAgentType(scenario.agentMeta?.[agent.id]?.agentType)] += 1
-        }
-
-        return {
-          normal: Math.max(result.normal, counts.normal),
-          elderly: Math.max(result.elderly, counts.elderly),
-        }
-      },
-      { normal: 0, elderly: 0 },
-    )
-    if (maxAgents.normal === 0 && maxAgents.elderly === 0) {
+    const maxAgents = scenario.frames.reduce((max, frame) => Math.max(max, frame.agents.length), 0)
+    if (maxAgents === 0) {
       return
     }
 
-    const normalSet = this.createSimulationPointSet(
-      sampleSimulationAgentColor(scenario, 'normal'),
+    const pointCloud = this.createSimulationPointCloud(
+      maxAgents,
       this.config.visuals.simulationPointSize * SIMULATION_POINT_SCALE,
-      maxAgents.normal,
       23,
     )
-    const elderlySet = this.createSimulationPointSet(
-      sampleSimulationAgentColor(scenario, 'elderly'),
-      this.config.visuals.simulationPointSize * SIMULATION_ELDERLY_SCALE,
-      maxAgents.elderly,
-      25,
-    )
 
-    if (normalSet) {
-      this.simulationPointSets.normal = normalSet
-      this.layers.simulation.add(normalSet.glow, normalSet.core)
-    }
-    if (elderlySet) {
-      this.simulationPointSets.elderly = elderlySet
-      this.layers.simulation.add(elderlySet.glow, elderlySet.core)
+    if (pointCloud) {
+      this.simulationPointCloud = pointCloud
+      this.layers.simulation.add(pointCloud.glow, pointCloud.core)
     }
 
     this.simulationMarkerGroup = new THREE.Group()
@@ -1624,7 +1587,7 @@ export class DemoScene {
   }
 
   private renderSimulationFrame(elapsedSeconds: number): void {
-    if (!this.currentScenario) {
+    if (!this.currentScenario || !this.simulationPointCloud) {
       return
     }
 
@@ -1645,57 +1608,50 @@ export class DemoScene {
     const frame = frames[frameIndex]
     const recentReplanAgents = this.collectRecentReplanAgents(frameIndex)
 
-    const drawCounts = { normal: 0, elderly: 0 }
-    frame.agents.forEach((agent) => {
-      const type = normalizeSimulationAgentType(this.currentScenario?.agentMeta?.[agent.id]?.agentType)
-      const set = this.simulationPointSets[type]
-      if (!set) {
-        return
-      }
-
-      const pointIndex = drawCounts[type]
-      drawCounts[type] += 1
+    frame.agents.forEach((agent, index) => {
       const point = toSceneVector(agent)
-      set.positions[pointIndex * 3] = point.x
-      set.positions[pointIndex * 3 + 1] = point.y
-      set.positions[pointIndex * 3 + 2] = point.z
+      this.simulationPointCloud!.positions[index * 3] = point.x
+      this.simulationPointCloud!.positions[index * 3 + 1] = point.y
+      this.simulationPointCloud!.positions[index * 3 + 2] = point.z
+
+      const agentType = this.currentScenario?.agentMeta?.[agent.id]?.agentType
+      const color = sampleSimulationAgentColor(this.currentScenario!, agentType)
+      this.simulationPointCloud!.colors[index * 3] = color.r
+      this.simulationPointCloud!.colors[index * 3 + 1] = color.g
+      this.simulationPointCloud!.colors[index * 3 + 2] = color.b
     })
 
-    ;(['normal', 'elderly'] as const).forEach((type) => {
-      const set = this.simulationPointSets[type]
-      if (!set) {
-        return
-      }
-
-      set.geometry.setDrawRange(0, drawCounts[type])
-      const positionAttribute = set.geometry.getAttribute('position') as THREE.BufferAttribute
-      positionAttribute.needsUpdate = true
-    })
+    this.simulationPointCloud.geometry.setDrawRange(0, frame.agents.length)
+    const positionAttribute = this.simulationPointCloud.geometry.getAttribute('position') as THREE.BufferAttribute
+    const colorAttribute = this.simulationPointCloud.geometry.getAttribute('color') as THREE.BufferAttribute
+    positionAttribute.needsUpdate = true
+    colorAttribute.needsUpdate = true
 
     this.updateSimulationMarkers(frame, clampedTime, recentReplanAgents)
   }
 
-  private createSimulationPointSet(
-    color: THREE.Color,
-    size: number,
+  private createSimulationPointCloud(
     maxCount: number,
+    size: number,
     renderOrder: number,
-  ): SimulationPointSet | null {
+  ): SimulationPointCloud | null {
     if (maxCount <= 0) {
       return null
     }
 
     const positions = new Float32Array(maxCount * 3)
+    const colors = new Float32Array(maxCount * 3)
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
     geometry.setDrawRange(0, maxCount)
 
     const glowMaterial = new THREE.PointsMaterial({
-      color,
       size: size * SIMULATION_GLOW_SCALE,
       sizeAttenuation: true,
+      vertexColors: true,
       transparent: true,
-      opacity: 0.24,
+      opacity: 0.18,
       blending: THREE.AdditiveBlending,
     })
     rememberOpacity(glowMaterial)
@@ -1704,18 +1660,18 @@ export class DemoScene {
     glow.renderOrder = renderOrder
 
     const coreMaterial = new THREE.PointsMaterial({
-      color,
       size,
       sizeAttenuation: true,
+      vertexColors: true,
       transparent: true,
-      opacity: 0.98,
+      opacity: 0.94,
     })
     rememberOpacity(coreMaterial)
     liftOverlayMaterial(coreMaterial)
     const core = new THREE.Points(geometry, coreMaterial)
     core.renderOrder = renderOrder + 1
 
-    return { geometry, positions, glow, core }
+    return { geometry, positions, colors, core, glow }
   }
 
   private preferredPlaybackStartTime(scenario: SimulationScenario): number {
@@ -1788,8 +1744,8 @@ export class DemoScene {
     }
 
     const material = this.ensureSimulationReplanMaterial()
-    const pulse = 1 + Math.sin(currentTime * 9) * 0.14
-    const bob = Math.sin(currentTime * 7) * 0.22
+    const pulse = 1 + Math.sin(currentTime * 9) * 0.1
+    const bob = Math.sin(currentTime * 7) * 0.18
 
     for (const agent of frame.agents) {
       if (!recentReplanAgents.has(agent.id)) {
@@ -1799,7 +1755,7 @@ export class DemoScene {
       const sprite = new THREE.Sprite(material)
       const point = toSceneVector(agent)
       sprite.position.set(point.x, point.y + REPLAN_MARKER_HEIGHT + bob, point.z)
-      sprite.scale.set(5.2 * pulse, 5.2 * pulse, 1)
+      sprite.scale.set(3.8 * pulse, 3.8 * pulse, 1)
       sprite.renderOrder = 28
       this.simulationMarkerGroup.add(sprite)
     }
