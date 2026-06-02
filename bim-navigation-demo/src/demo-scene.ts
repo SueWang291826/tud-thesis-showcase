@@ -541,7 +541,7 @@ export class DemoScene {
     endMarker.position.copy(points[points.length - 1])
     this.layers.route.add(startMarker, endMarker)
 
-    if (this.activeStage === 5 || this.activeStage === 7) {
+    if (this.activeStage === 5 || this.activeStage === 6) {
       this.startCameraTween(this.activeStage)
     }
   }
@@ -884,7 +884,7 @@ export class DemoScene {
   }
 
   private applyModelStagePose(): void {
-    const explodeRatio = this.activeStage === 1 ? 1 : this.activeStage === 7 ? 0.35 : 0
+    const explodeRatio = this.activeStage === 1 ? 1 : this.activeStage === 2 ? 0.5 : 0
     for (const group of this.modelStoreyGroups) {
       const baseY = typeof group.userData.baseY === 'number' ? group.userData.baseY : group.position.y
       const explodedY = typeof group.userData.explodedY === 'number' ? group.userData.explodedY : group.position.y
@@ -1296,12 +1296,11 @@ export class DemoScene {
   private applyStageVisibility(): void {
     const stageVisibility: Record<StageDefinition['id'], Record<keyof typeof this.layers, number>> = {
       1: { model: 1, context: 0, pointCloud: 0, movement: 0, graph: 0, route: 0, anchors: 0, simulation: 0 },
-      2: { model: 0, context: 0.72, pointCloud: 0, movement: 1, graph: 0, route: 0, anchors: 0.18, simulation: 0 },
-      3: { model: 0, context: 0.52, pointCloud: 1, movement: 0.08, graph: 0, route: 0, anchors: 0.1, simulation: 0 },
-      4: { model: 0, context: 0, pointCloud: 0, movement: 0.05, graph: 1, route: 0, anchors: 0.22, simulation: 0 },
-      5: { model: 0, context: 0, pointCloud: 0, movement: 0, graph: 0.56, route: 1, anchors: 0.18, simulation: 0 },
-      6: { model: 0, context: 0, pointCloud: 0, movement: 0.05, graph: 0.24, route: 0.5, anchors: 0.15, simulation: 1 },
-      7: { model: 0.06, context: 0, pointCloud: 0.12, movement: 0.12, graph: 0.84, route: 1, anchors: 0.14, simulation: 0.82 },
+      2: { model: 0.24, context: 0.84, pointCloud: 0, movement: 0.14, graph: 0, route: 0, anchors: 0.42, simulation: 0 },
+      3: { model: 0, context: 0.62, pointCloud: 0, movement: 1, graph: 0, route: 0, anchors: 0.2, simulation: 0 },
+      4: { model: 0, context: 0.16, pointCloud: 0.16, movement: 0.12, graph: 1, route: 0, anchors: 0.32, simulation: 0 },
+      5: { model: 0, context: 0.08, pointCloud: 0, movement: 0.08, graph: 0.48, route: 1, anchors: 0.18, simulation: 0.74 },
+      6: { model: 0, context: 0.04, pointCloud: 0, movement: 0.08, graph: 0.72, route: 1, anchors: 0.18, simulation: 1 },
     }
 
     for (const [key, group] of Object.entries(this.layers) as Array<[keyof typeof this.layers, THREE.Group]>) {
@@ -1323,7 +1322,7 @@ export class DemoScene {
 
     const { position, target } = focusFromBounds(
       focusBox,
-      stageId === 2 ? 0.85 : stageId === 4 ? 1.1 : stageId === 7 ? 1.35 : 1,
+      stageId === 2 ? 0.92 : stageId === 4 ? 1.08 : stageId === 6 ? 1.28 : 1,
     )
 
     const offset = new THREE.Vector3()
@@ -1331,9 +1330,9 @@ export class DemoScene {
       offset.set(-16, 10, -18)
     } else if (stageId === 4) {
       offset.set(5, 28, 6)
+    } else if (stageId === 5) {
+      offset.set(9, 18, 14)
     } else if (stageId === 6) {
-      offset.set(12, 20, 18)
-    } else if (stageId === 7) {
       offset.set(18, 12, 12)
     }
 

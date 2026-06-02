@@ -14,51 +14,44 @@ const STAGES: StageDefinition[] = [
   {
     id: 1,
     label: 'Stage 1',
-    title: 'BIM Input Model',
-    description: 'Show the aligned station BIM as the starting context before any abstraction into navigation-ready data structures.',
-    footnote: 'This is the raw geometric reference used to explain what later pipeline stages extract, sample, and connect.',
+    title: 'IFC BIM Input',
+    description: 'Present the multi-file IFC BIM input as the raw construction-oriented model, keeping relevant geometry and level separation visible.',
+    footnote: 'Focus: multi-file IFC data, rich building semantics, and the detailed geometric source before any traffic-oriented abstraction.',
   },
   {
     id: 2,
     label: 'Stage 2',
-    title: 'Geometry Extraction',
-    description: 'Show the walkable geometry abstraction extracted from BIM: floor-supporting regions, vertical connectors, and navigation-relevant context.',
-    footnote: 'This corresponds to pipeline STEP 1. The full BIM is replaced by a lightweight shell so the extracted method output reads clearly.',
+    title: 'Semantic Preprocessing',
+    description: 'Show storey mapping, traffic-relevant filtering, public-versus-non-public separation, and connector identification before walkability extraction.',
+    footnote: 'This stage is not yet routing-ready; it is the semantic cleanup layer that makes later movement abstraction defensible.',
   },
   {
     id: 3,
     label: 'Stage 3',
-    title: 'Node Sampling',
-    description: 'Show the valid navigation samples generated from the walkable geometry after clearance filtering, forbidden-zone removal, and connector snapping.',
-    footnote: `${EXACT_POINT_CLOUD_DISCLAIMER} In the fallback path, dense samples are aggregated into readable tiles while preserving level density and method intent.`,
+    title: 'Walkable Structure Extraction',
+    description: 'Reduce the BIM to walkable areas, barriers, obstacles, valid transitions, and the 2.5D movement structure used downstream.',
+    footnote: 'The walkthrough emphasizes circulation-supporting surfaces rather than the full BIM massing so walkability becomes visually explicit.',
   },
   {
     id: 4,
     label: 'Stage 4',
-    title: 'Navigation Graph Construction',
-    description: 'Expose the 2.5D multilevel navigation graph built from sampled nodes and highlighted with fare gates, entrances, and vertical connectors.',
-    footnote: 'This corresponds to pipeline STEP 3. Special nodes are highlighted directly in the scene so the graph-building logic is legible at a glance.',
+    title: '2.5D Graph Construction and Enrichment',
+    description: 'Generate the node-edge graph from the extracted movement structure and enrich it with vertical connectivity, directionality, and accessibility cues.',
+    footnote: 'Special connectors and semantic attributes are highlighted directly so the graph-enrichment logic remains legible at a glance.',
   },
   {
     id: 5,
     label: 'Stage 5',
-    title: 'Routing and OD Paths',
-    description: 'Highlight representative paths computed on the graph and explain how OD pairs are snapped and solved with Dijkstra.',
-    footnote: 'This corresponds to pipeline STEP 4. Route examples come from public/data/routes.json or an in-browser Dijkstra fallback.',
+    title: 'Routing and Pedestrian Simulation',
+    description: 'Assign origin-destination demand on the enriched graph and show graph-based movement, waiting, bottlenecks, and the static routing baseline.',
+    footnote: 'This stage combines route generation with baseline pedestrian movement so OD logic and crowd trajectories can be read together.',
   },
   {
     id: 6,
     label: 'Stage 6',
-    title: 'ABM Simulation',
-    description: 'Play the agent-based simulation on top of the routed graph and surface congestion-driven behaviour over time.',
-    footnote: 'This corresponds to pipeline STEP 5. Missing assets only trigger warnings and do not block the demonstrator.',
-  },
-  {
-    id: 7,
-    label: 'Stage 7',
-    title: 'Integrated Evaluation View',
-    description: 'Bring the BIM shell, graph, route, and simulation together as a high-level evaluation and narration view.',
-    footnote: 'Use this stage as the pipeline summary after geometry extraction, sampling, graph construction, routing, and simulation have been explained.',
+    title: 'Congestion-aware Replanning and Evaluation',
+    description: 'Show dynamic rerouting under congestion-aware costs and compare outcomes through travel-time, waiting-time, queue, and replanning metrics.',
+    footnote: 'This is the evaluation stage: modelling choices are judged by rerouting behaviour and comparative metrics rather than geometry alone.',
   },
 ]
 
@@ -71,46 +64,40 @@ interface StageMethodSummary {
 
 const STAGE_METHODS: Record<StageDefinition['id'], StageMethodSummary> = {
   1: {
-    step: 'Context BIM',
-    input: 'Aligned IFC-derived station model',
-    operation: 'Expose the raw geometric reference before simplification',
-    output: 'Whole-station BIM context',
+    step: 'IFC BIM Input',
+    input: 'Multi-file IFC data and detailed relevant geometry',
+    operation: 'Expose rich building semantics in an exploded, construction-oriented model',
+    output: 'Structured BIM context',
   },
   2: {
-    step: 'Pipeline STEP 1',
-    input: 'IFC slabs, obstacles, doors, and connector tables',
-    operation: 'Extract walkable floor support, connector endpoints, and navigation context',
-    output: 'Lightweight geometry shell',
+    step: 'Semantic Preprocessing',
+    input: 'Storey-tagged BIM entities and connector candidates',
+    operation: 'Map storeys, filter traffic-relevant space, and separate public versus non-public areas',
+    output: 'Semantically cleaned station layers',
   },
   3: {
-    step: 'Pipeline STEP 2',
-    input: 'Walkable geometry and connector anchors',
-    operation: 'Sample valid navigation nodes with clearance and forbidden-zone filtering',
-    output: 'Readable node field / density tiles',
+    step: 'Walkable Structure Extraction',
+    input: 'Semantically filtered floors, barriers, and connectors',
+    operation: 'Extract walkable areas, obstacles, valid transitions, and 2.5D movement strips',
+    output: 'Walkable movement structure',
   },
   4: {
-    step: 'Pipeline STEP 3',
-    input: 'Sampled nodes plus cross-level connectors',
-    operation: 'Connect neighbours, validate line of sight, and weight vertical traversal',
-    output: '2.5D navigation graph',
+    step: '2.5D Graph Construction',
+    input: 'Walkable structure plus connector semantics',
+    operation: 'Generate node-edge connectivity and enrich it with directionality and accessibility attributes',
+    output: 'Enriched 2.5D graph',
   },
   5: {
-    step: 'Pipeline STEP 4',
-    input: 'Graph, semantic regions, and OD demand',
-    operation: 'Compute Dijkstra paths and snap routes to the graph',
-    output: 'Representative OD paths',
+    step: 'Routing and Simulation',
+    input: 'Enriched graph, OD demand, and baseline movement rules',
+    operation: 'Solve graph routes, animate pedestrian movement, and expose waiting and bottleneck patterns',
+    output: 'Baseline routing and pedestrian simulation',
   },
   6: {
-    step: 'Pipeline STEP 5',
-    input: 'Graph, routes, and scenario demand',
-    operation: 'Advance agents, record congestion, and replay scenario dynamics',
-    output: 'Simulation trajectories and queues',
-  },
-  7: {
-    step: 'Pipeline STEP 6',
-    input: 'Routes, simulations, and graph metrics',
-    operation: 'Summarize the pipeline outputs into an evaluation-oriented narrative',
-    output: 'Integrated method overview',
+    step: 'Replanning and Evaluation',
+    input: 'Congestion signals, route alternatives, and simulation metrics',
+    operation: 'Trigger dynamic rerouting and compare travel, waiting, queue, and replanning outcomes',
+    output: 'Congestion-aware evaluation',
   },
 }
 
@@ -157,12 +144,12 @@ function buildShell(): string {
         <div class="brand-card">
           <div class="brand-meta">
             <span class="meta-pill">Offline-ready</span>
-            <span class="meta-pill">7-stage narrative</span>
+            <span class="meta-pill">6-stage workflow</span>
           </div>
           <p class="eyebrow">Interactive Demonstrator</p>
           <h1 class="brand-title">BIM to Navigation Digital Twin</h1>
           <p class="brand-copy" data-stage-description-static>
-            Local thesis-defense demonstrator with deterministic stages, offline data loading, and keyboard or mouse review controls.
+            Local thesis-defense demonstrator structured as a six-step methodological workflow from IFC BIM to congestion-aware pedestrian simulation.
           </p>
         </div>
 
@@ -296,7 +283,7 @@ function buildShell(): string {
             <button type="button" data-close-help>Close</button>
           </div>
           <div class="help-grid">
-            <div><strong>1-7</strong><span>Jump to a stage</span></div>
+            <div><strong>1-6</strong><span>Jump to a stage</span></div>
             <div><strong>Arrow keys</strong><span>Previous or next stage</span></div>
             <div><strong>Space</strong><span>Play or pause simulation</span></div>
             <div><strong>R</strong><span>Reset camera</span></div>
@@ -458,49 +445,42 @@ function getStageMetrics(
       ]
     case 2:
       return [
-        { label: 'Pipeline step', value: 'STEP 1 Geometry' },
-        { label: 'Geometry source', value: status.movementMode === 'asset' ? 'Extracted walkable surfaces' : 'Walkable shell fallback' },
-        { label: 'Connector summary', value: graphMetrics.connectors },
-        { label: 'Levels present', value: graphMetrics.level_node_counts },
+        { label: 'Storey mapping', value: graphMetrics.level_node_counts },
+        { label: 'Semantic anchors', value: totalAnchors },
+        { label: 'Connector cues', value: graphMetrics.connectors },
+        { label: 'Traffic filtering', value: 'public vs non-public' },
       ]
     case 3:
       return [
-        { label: 'Pipeline step', value: 'STEP 2 Sampling' },
-        { label: 'Sampling mode', value: status.pointCloudMode === 'asset' ? 'PLY sample cloud' : 'Aggregated density tiles' },
-        { label: 'Nominal grid spacing', value: '0.5 m' },
-        { label: 'Valid navigation nodes', value: graphMetrics.total_nodes },
+        { label: 'Walkable structure', value: status.movementMode === 'asset' ? 'Extracted walkable surfaces' : 'Graph-derived walkable fallback' },
+        { label: 'Levels present', value: graphMetrics.level_node_counts },
+        { label: 'Connector endpoints', value: graphMetrics.connectors },
+        { label: 'Barrier handling', value: 'BIM-derived filtering' },
       ]
     case 4:
       return [
         { label: 'Total nodes', value: graphMetrics.total_nodes },
         { label: 'Total edges', value: graphMetrics.total_edges },
         { label: 'Connected graph', value: graphMetrics.is_connected },
-        { label: 'Special nodes', value: summarizeSpecialGraphNodes(graph) },
-        { label: 'Connector summary', value: graphMetrics.connectors },
+        { label: 'Special connectors', value: summarizeSpecialGraphNodes(graph) },
+        { label: 'Accessibility cues', value: graphMetrics.connectors },
       ]
     case 5:
       return [
         { label: 'Route label', value: route?.label ?? null },
-        { label: 'Route source', value: route?.sourceKind ?? null },
+        { label: 'Scenario label', value: scenario?.label ?? null },
         { label: 'Travel time', value: route?.metrics.totalTravelTime ?? route?.metrics.total_travel_time ?? null },
-        { label: 'Connectors used', value: route?.metrics.connectorsUsed ?? route?.metrics.connectors_used ?? null },
+        { label: 'Mean wait time', value: scenario?.summary.mean_wait_time ?? null },
+        { label: 'Max queue', value: scenario?.summary.max_queue ?? null },
       ]
     case 6:
       return [
         { label: 'Scenario label', value: scenario?.label ?? null },
-        { label: 'Scenario kind', value: scenario?.kind ?? null },
+        { label: 'Current route', value: status.routeLabel },
         { label: 'Mean travel time', value: scenario?.summary.mean_travel_time ?? null },
         { label: 'Mean wait time', value: scenario?.summary.mean_wait_time ?? null },
         { label: 'Total replans', value: scenario?.summary.total_replans ?? null },
         { label: 'Max queue', value: scenario?.summary.max_queue ?? null },
-      ]
-    case 7:
-      return [
-        { label: 'Current route', value: status.routeLabel },
-        { label: 'Current simulation', value: status.simulationLabel },
-        { label: 'Integrated graph edges', value: graphMetrics.total_edges },
-        { label: 'Special nodes', value: summarizeSpecialGraphNodes(graph) },
-        { label: 'Anchor count', value: totalAnchors },
       ]
     default:
       return []
@@ -577,10 +557,10 @@ export async function bootstrapDemo(root: HTMLDivElement): Promise<void> {
       refs.stageOverlayTitle.textContent = stage.title
       refs.stageOverlayDescription.textContent = stage.description
       refs.stageOverlayProgress.textContent = `${currentStageIndex + 1} / ${STAGES.length}`
-      refs.pointCloudNote.classList.toggle('hidden', !(stage.id === 3 || stage.id === 7))
+      refs.pointCloudNote.classList.toggle('hidden', true)
       refs.legendPanel.classList.toggle('hidden', stage.id < 4)
-      refs.routeWrap.classList.toggle('hidden', !(stage.id === 5 || stage.id === 7 || stage.id === 6))
-      refs.scenarioWrap.classList.toggle('hidden', !(stage.id === 6 || stage.id === 7))
+      refs.routeWrap.classList.toggle('hidden', !(stage.id === 5 || stage.id === 6))
+      refs.scenarioWrap.classList.toggle('hidden', !(stage.id === 5 || stage.id === 6))
       refs.metrics.innerHTML = getStageMetrics(
         stage,
         bundle.config,
@@ -675,7 +655,7 @@ export async function bootstrapDemo(root: HTMLDivElement): Promise<void> {
         return
       }
 
-      if (/^[1-7]$/.test(event.key)) {
+      if (/^[1-6]$/.test(event.key)) {
         selectStage(Number.parseInt(event.key, 10) - 1)
         return
       }

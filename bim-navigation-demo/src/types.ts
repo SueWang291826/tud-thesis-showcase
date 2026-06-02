@@ -221,7 +221,7 @@ export interface DemoDataBundle {
 }
 
 export interface StageDefinition {
-  id: 1 | 2 | 3 | 4 | 5 | 6 | 7
+  id: 1 | 2 | 3 | 4 | 5 | 6
   label: string
   title: string
   description: string
