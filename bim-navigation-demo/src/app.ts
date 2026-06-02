@@ -6,6 +6,7 @@ import type {
   MetricValue,
   NavigationGraphData,
   SceneStatus,
+  SimulationData,
   SimulationScenario,
   StageDefinition,
 } from './types'
@@ -50,8 +51,8 @@ const STAGES: StageDefinition[] = [
     id: 6,
     label: 'Stage 6',
     title: 'Congestion-aware Replanning and Evaluation',
-    description: 'Show dynamic rerouting under congestion-aware costs and compare outcomes through travel-time, waiting-time, queue, and replanning metrics.',
-    footnote: 'This is the evaluation stage: modelling choices are judged by rerouting behaviour and comparative metrics rather than geometry alone.',
+    description: 'Compare the congestion-aware scenario against the static baseline: cool tiles mark reduced pressure, warm tiles mark rerouted or higher pressure zones, and the cards report the outcome deltas.',
+    footnote: 'This stage is a comparison view rather than another playback view. It visualizes where replanning relieves queues and where new pressure is introduced.',
   },
 ]
 
@@ -124,6 +125,8 @@ interface References {
   warnings: HTMLElement
   helpOverlay: HTMLElement
   legendPanel: HTMLElement
+  legendTitle: HTMLElement
+  legendGrid: HTMLElement
   pointCloudNote: HTMLElement
   prevButton: HTMLButtonElement
   nextButton: HTMLButtonElement
@@ -244,8 +247,8 @@ function buildShell(): string {
           </div>
 
           <div class="viewport-overlay legend-panel hidden" data-legend>
-            <p class="eyebrow">Graph cues</p>
-            <div class="legend-grid">
+            <p class="eyebrow" data-legend-title>Graph cues</p>
+            <div class="legend-grid" data-legend-grid>
               <div><span class="swatch swatch-graph"></span>Level graph backbone</div>
               <div><span class="swatch swatch-route"></span>Snapped route</div>
               <div><span class="swatch swatch-fare"></span>Fare gates</div>
@@ -335,6 +338,8 @@ function collectReferences(root: HTMLElement): References {
     warnings: root.querySelector<HTMLElement>('[data-warnings]')!,
     helpOverlay: root.querySelector<HTMLElement>('[data-help-overlay]')!,
     legendPanel: root.querySelector<HTMLElement>('[data-legend]')!,
+    legendTitle: root.querySelector<HTMLElement>('[data-legend-title]')!,
+    legendGrid: root.querySelector<HTMLElement>('[data-legend-grid]')!,
     pointCloudNote: root.querySelector<HTMLElement>('[data-point-cloud-note]')!,
     prevButton: root.querySelector<HTMLButtonElement>('[data-prev]')!,
     nextButton: root.querySelector<HTMLButtonElement>('[data-next]')!,
@@ -424,10 +429,96 @@ function methodCard(label: string, value: string): string {
   return `<article class="method-card"><span>${label}</span><strong>${value}</strong></article>`
 }
 
+function isStaticScenario(scenario: SimulationScenario): boolean {
+  const signature = `${scenario.id} ${scenario.label} ${scenario.routingMode}`.toLowerCase()
+  return signature.includes('static')
+}
+
+function resolveEvaluationPair(
+  simulation: SimulationData,
+  currentScenario: SimulationScenario | undefined,
+): { baseline: SimulationScenario; evaluated: SimulationScenario } | null {
+  const baseline = simulation.scenarios.find((scenario) => isStaticScenario(scenario))
+  if (!baseline) {
+    return null
+  }
+
+  const evaluated = !currentScenario || isStaticScenario(currentScenario)
+    ? simulation.scenarios.find((scenario) => !isStaticScenario(scenario) && scenario.id !== baseline.id)
+    : currentScenario
+
+  if (!evaluated || evaluated.id === baseline.id) {
+    return null
+  }
+
+  return { baseline, evaluated }
+}
+
+function metricNumber(value: string | number | null | undefined): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number.parseFloat(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
+  return null
+}
+
+function formatDeltaMetric(
+  evaluated: string | number | null | undefined,
+  baseline: string | number | null | undefined,
+  suffix = '',
+): string | null {
+  const evaluatedValue = metricNumber(evaluated)
+  const baselineValue = metricNumber(baseline)
+  if (evaluatedValue === null || baselineValue === null) {
+    return null
+  }
+
+  const delta = evaluatedValue - baselineValue
+  const sign = delta > 0 ? '+' : ''
+  const useInteger = Math.abs(delta - Math.round(delta)) < 1e-6
+  const body = useInteger ? Math.round(delta).toString() : delta.toFixed(2)
+  return `${sign}${body}${suffix} vs static`
+}
+
+function buildLegend(stageId: StageDefinition['id']): { title: string; items: Array<{ swatch: string; label: string }> } {
+  if (stageId === 6) {
+    return {
+      title: 'Evaluation cues',
+      items: [
+        { swatch: 'swatch-eval-relief', label: 'Reduced crowding vs static baseline' },
+        { swatch: 'swatch-eval-pressure', label: 'Higher pressure or rerouted load' },
+        { swatch: 'swatch-route', label: 'Reference route' },
+        { swatch: 'swatch-graph', label: 'Graph backbone' },
+        { swatch: 'swatch-sim', label: 'Current scenario agents' },
+        { swatch: 'swatch-vertical', label: 'Vertical transfer zones' },
+      ],
+    }
+  }
+
+  return {
+    title: 'Graph cues',
+    items: [
+      { swatch: 'swatch-graph', label: 'Level graph backbone' },
+      { swatch: 'swatch-route', label: 'Snapped route' },
+      { swatch: 'swatch-fare', label: 'Fare gates' },
+      { swatch: 'swatch-entrance', label: 'Entrances and exits' },
+      { swatch: 'swatch-vertical', label: 'Stairs, escalators, elevators' },
+      { swatch: 'swatch-model', label: 'Subdued BIM shell' },
+      { swatch: 'swatch-sim', label: 'Simulation agents' },
+    ],
+  }
+}
+
 function getStageMetrics(
   stage: StageDefinition,
   config: DemoConfig,
   graph: NavigationGraphData,
+  simulationData: SimulationData,
   status: SceneStatus,
   route: DemoRoute | undefined,
   scenario: SimulationScenario | undefined,
@@ -474,13 +565,28 @@ function getStageMetrics(
         { label: 'Max queue', value: scenario?.summary.max_queue ?? null },
       ]
     case 6:
+      const evaluationPair = resolveEvaluationPair(simulationData, scenario)
       return [
-        { label: 'Scenario label', value: scenario?.label ?? null },
-        { label: 'Current route', value: status.routeLabel },
-        { label: 'Mean travel time', value: scenario?.summary.mean_travel_time ?? null },
-        { label: 'Mean wait time', value: scenario?.summary.mean_wait_time ?? null },
-        { label: 'Total replans', value: scenario?.summary.total_replans ?? null },
-        { label: 'Max queue', value: scenario?.summary.max_queue ?? null },
+        { label: 'Evaluation pair', value: evaluationPair ? `${evaluationPair.evaluated.label} vs ${evaluationPair.baseline.label}` : null },
+        {
+          label: 'Travel-time delta',
+          value: evaluationPair
+            ? formatDeltaMetric(evaluationPair.evaluated.summary.mean_travel_time, evaluationPair.baseline.summary.mean_travel_time, ' s')
+            : null,
+        },
+        {
+          label: 'Wait-time delta',
+          value: evaluationPair
+            ? formatDeltaMetric(evaluationPair.evaluated.summary.mean_wait_time, evaluationPair.baseline.summary.mean_wait_time, ' s')
+            : null,
+        },
+        {
+          label: 'Queue delta',
+          value: evaluationPair
+            ? formatDeltaMetric(evaluationPair.evaluated.summary.max_queue, evaluationPair.baseline.summary.max_queue)
+            : null,
+        },
+        { label: 'Total replans', value: evaluationPair?.evaluated.summary.total_replans ?? null },
       ]
     default:
       return []
@@ -558,13 +664,19 @@ export async function bootstrapDemo(root: HTMLDivElement): Promise<void> {
       refs.stageOverlayDescription.textContent = stage.description
       refs.stageOverlayProgress.textContent = `${currentStageIndex + 1} / ${STAGES.length}`
       refs.pointCloudNote.classList.toggle('hidden', true)
+      const legend = buildLegend(stage.id)
+      refs.legendTitle.textContent = legend.title
+      refs.legendGrid.innerHTML = legend.items
+        .map((item) => `<div><span class="swatch ${item.swatch}"></span>${item.label}</div>`)
+        .join('')
       refs.legendPanel.classList.toggle('hidden', stage.id < 4)
-      refs.routeWrap.classList.toggle('hidden', !(stage.id === 5 || stage.id === 6))
-      refs.scenarioWrap.classList.toggle('hidden', !(stage.id === 5 || stage.id === 6))
+      refs.routeWrap.classList.toggle('hidden', stage.id !== 5)
+      refs.scenarioWrap.classList.toggle('hidden', stage.id !== 5)
       refs.metrics.innerHTML = getStageMetrics(
         stage,
         bundle.config,
         bundle.graph,
+        bundle.simulation,
         status,
         currentRoute,
         currentScenario,

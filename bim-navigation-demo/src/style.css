@@ -633,6 +633,14 @@ p {
   background: var(--sim-color);
 }
 
+.swatch-eval-relief {
+  background: linear-gradient(180deg, #8ecae6, #2ec4b6);
+}
+
+.swatch-eval-pressure {
+  background: linear-gradient(180deg, #ffd166, #ff595e);
+}
+
 .note-panel {
   left: 20px;
   top: 20px;
