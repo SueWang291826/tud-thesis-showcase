@@ -1,0 +1,95 @@
+{
+  "app": {
+    "title": "Interactive BIM-to-Navigation Digital Twin Demonstrator",
+    "subtitle": "A local thesis-defense walkthrough from BIM geometry to graph, routing, and simulation.",
+    "footerNote": "Runs locally in the browser with configurable placeholders for missing BIM and point-cloud assets.",
+    "pointCloudDisclaimer": "This point cloud is a BIM-derived, surface-sampled visualization generated from IFC/mesh geometry. It is not measured LiDAR, photogrammetry, or any other sensor-captured reality data.",
+    "gestureNotice": "Gesture control is optional. Keyboard and mouse controls remain active even when MediaPipe assets or webcam access are unavailable."
+  },
+  "assets": {
+    "bimModel": {
+      "path": "/models/station_bim.glb",
+      "placeholderAllowed": true,
+      "transform": {
+        "offset": { "x": 0, "y": 0, "z": 0 },
+        "rotationDeg": { "x": 0, "y": 0, "z": 0 },
+        "scale": 1
+      }
+    },
+    "pointCloud": {
+      "path": "/pointcloud/station_surface_sampled.ply",
+      "placeholderAllowed": true,
+      "transform": {
+        "offset": { "x": 0, "y": 0, "z": 0 },
+        "rotationDeg": { "x": 0, "y": 0, "z": 0 },
+        "scale": 1
+      }
+    },
+    "movementGeometry": {
+      "path": "/data/movement_geometry.json",
+      "optional": true,
+      "placeholderAllowed": true
+    },
+    "navigationGraph": {
+      "path": "/data/navigation_graph.json"
+    },
+    "semanticAnchors": {
+      "path": "/data/semantic_anchors.json"
+    },
+    "routes": {
+      "path": "/data/routes.json"
+    },
+    "simulation": {
+      "path": "/data/simulation.json",
+      "optional": true,
+      "placeholderAllowed": true
+    },
+    "mediapipe": {
+      "enabled": true,
+      "wasmPath": "/mediapipe/wasm",
+      "modelAssetPath": "/mediapipe/gesture_recognizer.task",
+      "minScore": 0.6,
+      "cooldownMs": 1200
+    }
+  },
+  "visuals": {
+    "backgroundTop": "#14324a",
+    "backgroundBottom": "#03080e",
+    "accent": "#ff9f1c",
+    "accentSoft": "#2ec4b6",
+    "route": "#ffd166",
+    "graph": "#4cc9f0",
+    "floor": "#f4a261",
+    "anchor": "#ff595e",
+    "simulation": "#80ed99",
+    "pointCloud": "#f7e1a0",
+    "transitionMs": 720,
+    "autoRotateSpeed": 0.35,
+    "pointSize": 0.22,
+    "graphRenderStep": 2,
+    "movementRenderStep": 8,
+    "simulationPointSize": 0.42
+  },
+  "camera": {
+    "position": { "x": 110, "y": 74, "z": -120 },
+    "target": { "x": 70, "y": 8, "z": -15 },
+    "fov": 50,
+    "near": 0.1,
+    "far": 2000
+  },
+  "controls": {
+    "enableDamping": true,
+    "dampingFactor": 0.08,
+    "minDistance": 15,
+    "maxDistance": 380
+  },
+  "metrics": {
+    "missingLabel": "Not provided"
+  },
+  "placeholderFlags": {
+    "model": true,
+    "pointCloud": true,
+    "movementGeometry": true,
+    "simulation": false
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "bim-navigation-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "prepare:data": "python scripts/prepare_thesis_demo_data.py",
+    "validate:assets": "python scripts/validate_demo_assets.py",
+    "placeholder:assets": "python scripts/create_placeholder_assets.py",
+    "export:station-bim": "python scripts/export_ifc_stack_to_glb.py --output public/models/station_bim.glb ../data0/设备层.ifc ../data0/站台层.ifc ../data0/站厅层.ifc ../data0/交通层.ifc"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.22",
+    "three": "^0.179.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.179.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12"
+  }
+}

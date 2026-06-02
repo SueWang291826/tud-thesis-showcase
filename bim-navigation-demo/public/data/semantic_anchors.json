@@ -1,0 +1,2656 @@
+{
+  "meta": {
+    "generatedAt": "2026-06-01T00:03:37.624497+00:00",
+    "generator": "scripts/prepare_thesis_demo_data.py",
+    "sourcePaths": [
+      "experiment/outputs/step4_routing/semantic_points.geojson"
+    ]
+  },
+  "anchors": [
+    {
+      "id": "ent_F3_entrance_D_000",
+      "type": "ENTRANCE",
+      "level": "F3",
+      "x": 115.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_001",
+      "type": "ENTRANCE",
+      "level": "F3",
+      "x": 115.95,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_002",
+      "type": "ENTRANCE",
+      "level": "F3",
+      "x": 116.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_003",
+      "type": "ENTRANCE",
+      "level": "F3",
+      "x": 116.95,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_004",
+      "type": "ENTRANCE",
+      "level": "F3",
+      "x": 117.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_005",
+      "type": "ENTRANCE",
+      "level": "F3",
+      "x": 117.95,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_006",
+      "type": "ENTRANCE",
+      "level": "F3",
+      "x": 118.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F4_entrance_A_000",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 29.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_001",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 29.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_002",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 30.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_003",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 30.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_004",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 31.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_005",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 31.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_006",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 32.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_007",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 32.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_008",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 33.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_000",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 61.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_001",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 61.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_002",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 62.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_003",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 62.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_004",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 63.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_005",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 63.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_006",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 64.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_007",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 64.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_008",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 65.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_009",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 65.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_010",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 66.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_011",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 66.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_012",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 67.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_013",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 67.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_014",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 68.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_015",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 68.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_016",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 69.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_017",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 69.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_018",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 70.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_019",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 70.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_020",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 71.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_021",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 71.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_022",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 72.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_023",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 72.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_024",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 73.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_025",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 73.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_026",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 74.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_027",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 74.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_028",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 75.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_029",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 75.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_030",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 76.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_031",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 76.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_032",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 77.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_033",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 77.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_034",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 78.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_035",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 78.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_036",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 79.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_037",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 79.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_038",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 80.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_039",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 80.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_040",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 81.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_041",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 81.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_000",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 115.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_001",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 115.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_002",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 116.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_003",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 116.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_004",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 117.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_005",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 117.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_006",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 118.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_007",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 118.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_008",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 119.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_009",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 119.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_010",
+      "type": "ENTRANCE",
+      "level": "F4",
+      "x": 120.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F3_entrance_D_000",
+      "type": "EXIT",
+      "level": "F3",
+      "x": 115.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_001",
+      "type": "EXIT",
+      "level": "F3",
+      "x": 115.95,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_002",
+      "type": "EXIT",
+      "level": "F3",
+      "x": 116.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_003",
+      "type": "EXIT",
+      "level": "F3",
+      "x": 116.95,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_004",
+      "type": "EXIT",
+      "level": "F3",
+      "x": 117.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_005",
+      "type": "EXIT",
+      "level": "F3",
+      "x": 117.95,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F3_entrance_D_006",
+      "type": "EXIT",
+      "level": "F3",
+      "x": 118.45,
+      "y": 22.0,
+      "z": 12.1
+    },
+    {
+      "id": "ent_F4_entrance_A_000",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 29.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_001",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 29.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_002",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 30.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_003",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 30.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_004",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 31.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_005",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 31.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_006",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 32.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_007",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 32.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_A_008",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 33.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_000",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 61.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_001",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 61.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_002",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 62.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_003",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 62.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_004",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 63.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_005",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 63.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_006",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 64.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_007",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 64.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_008",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 65.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_009",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 65.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_010",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 66.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_011",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 66.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_012",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 67.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_013",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 67.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_014",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 68.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_015",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 68.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_016",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 69.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_017",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 69.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_018",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 70.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_019",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 70.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_020",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 71.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_021",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 71.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_022",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 72.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_023",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 72.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_024",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 73.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_025",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 73.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_026",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 74.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_027",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 74.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_028",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 75.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_029",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 75.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_030",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 76.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_031",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 76.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_032",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 77.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_033",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 77.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_034",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 78.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_035",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 78.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_036",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 79.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_037",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 79.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_038",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 80.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_039",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 80.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_040",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 81.45,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_B_041",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 81.95,
+      "y": 26.0,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_000",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 115.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_001",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 115.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_002",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 116.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_003",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 116.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_004",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 117.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_005",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 117.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_006",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 118.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_007",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 118.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_008",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 119.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_009",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 119.95,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "ent_F4_entrance_C_010",
+      "type": "EXIT",
+      "level": "F4",
+      "x": 120.45,
+      "y": 24.4,
+      "z": 17.4
+    },
+    {
+      "id": "door_south_psd_D01_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 20.45,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D01_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 21.09,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D01_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 21.73,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D01_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 22.37,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D02_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 25.26,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D02_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 25.9,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D02_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 26.54,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D02_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 27.18,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D03_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 30.14,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D03_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 30.78,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D03_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 31.42,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D03_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 32.06,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D04_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 35.02,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D04_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 35.66,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D04_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 36.3,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D04_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 36.94,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D05_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 39.9,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D05_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 40.54,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D05_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 41.18,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D05_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 41.82,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D06_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 44.78,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D06_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 45.42,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D06_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 46.06,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D06_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 46.7,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D07_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 49.66,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D07_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 50.3,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D07_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 50.94,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D07_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 51.58,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D08_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 54.54,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D08_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 55.18,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D08_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 55.82,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D08_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 56.46,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D09_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 59.42,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D09_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 60.06,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D09_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 60.7,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D09_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 61.34,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D10_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 64.3,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D10_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 64.94,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D10_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 65.58,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D10_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 66.22,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D11_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 69.18,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D11_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 69.82,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D11_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 70.46,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D11_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 71.1,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D12_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 74.06,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D12_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 74.7,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D12_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 75.34,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D12_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 75.98,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D13_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 78.94,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D13_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 79.58,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D13_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 80.22,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D13_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 80.86,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D14_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 83.82,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D14_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 84.46,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D14_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 85.1,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D14_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 85.74,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D15_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 88.7,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D15_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 89.34,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D15_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 89.98,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D15_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 90.62,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D16_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 93.58,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D16_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 94.22,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D16_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 94.86,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D16_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 95.5,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D17_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 98.46,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D17_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 99.1,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D17_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 99.74,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D17_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 100.38,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D18_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 103.34,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D18_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 103.98,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D18_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 104.62,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D18_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 105.26,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D19_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 108.22,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D19_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 108.86,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D19_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 109.5,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D19_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 110.14,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D20_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 113.1,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D20_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 113.74,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D20_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 114.38,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D20_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 115.02,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D21_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 117.98,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D21_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 118.62,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D21_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 119.26,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D21_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 119.9,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D22_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 122.86,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D22_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 123.5,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D22_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 124.14,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D22_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 124.78,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D23_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 127.74,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D23_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 128.38,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D23_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 129.02,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D23_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 129.66,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D24_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 132.62,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D24_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 133.26,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D24_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 133.9,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_south_psd_D24_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 134.54,
+      "y": 4.45,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D01_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 20.45,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D01_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 21.09,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D01_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 21.73,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D01_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 22.37,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D02_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 25.26,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D02_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 25.9,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D02_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 26.54,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D02_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 27.18,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D03_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 30.14,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D03_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 30.78,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D03_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 31.42,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D03_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 32.06,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D04_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 35.02,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D04_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 35.66,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D04_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 36.3,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D04_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 36.94,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D05_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 39.9,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D05_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 40.54,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D05_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 41.18,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D05_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 41.82,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D06_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 44.78,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D06_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 45.42,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D06_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 46.06,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D06_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 46.7,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D07_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 49.66,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D07_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 50.3,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D07_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 50.94,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D07_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 51.58,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D08_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 54.54,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D08_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 55.18,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D08_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 55.82,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D08_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 56.46,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D09_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 59.42,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D09_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 60.06,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D09_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 60.7,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D09_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 61.34,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D10_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 64.3,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D10_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 64.94,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D10_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 65.58,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D10_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 66.22,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D11_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 69.18,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D11_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 69.82,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D11_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 70.46,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D11_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 71.1,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D12_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 74.06,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D12_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 74.7,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D12_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 75.34,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D12_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 75.98,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D13_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 78.94,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D13_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 79.58,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D13_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 80.22,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D13_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 80.86,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D14_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 83.82,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D14_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 84.46,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D14_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 85.1,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D14_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 85.74,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D15_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 88.7,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D15_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 89.34,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D15_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 89.98,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D15_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 90.62,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D16_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 93.58,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D16_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 94.22,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D16_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 94.86,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D16_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 95.5,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D17_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 98.46,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D17_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 99.1,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D17_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 99.74,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D17_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 100.38,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D18_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 103.34,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D18_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 103.98,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D18_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 104.62,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D18_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 105.26,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D19_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 108.22,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D19_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 108.86,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D19_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 109.5,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D19_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 110.14,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D20_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 113.1,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D20_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 113.74,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D20_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 114.38,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D20_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 115.02,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D21_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 117.98,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D21_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 118.62,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D21_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 119.26,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D21_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 119.9,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D22_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 122.86,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D22_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 123.5,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D22_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 124.14,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D22_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 124.78,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D23_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 127.74,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D23_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 128.38,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D23_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 129.02,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D23_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 129.66,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D24_w00_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 132.62,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D24_w01_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 133.26,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D24_w02_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 133.9,
+      "y": 17.05,
+      "z": 0.0
+    },
+    {
+      "id": "door_north_psd_D24_w03_P",
+      "type": "PLATFORM",
+      "level": "F1",
+      "x": 134.54,
+      "y": 17.05,
+      "z": 0.0
+    }
+  ],
+  "counts": {
+    "ENTRANCE": 69,
+    "EXIT": 69,
+    "PLATFORM": 192
+  }
+}

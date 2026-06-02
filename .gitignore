@@ -21,6 +21,7 @@ _*.txt
 outputs/
 experiment/outputs/
 data-preprocessing/outputs/
+_site/
 
 打包/
 

@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths:
+      - bim-navigation-demo/**
       - site/**
       - .github/workflows/pages.yml
   workflow_dispatch:
@@ -28,6 +29,31 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: bim-navigation-demo/package-lock.json
+
+      - name: Install demo dependencies
+        working-directory: bim-navigation-demo
+        run: npm ci
+
+      - name: Build BIM navigation demo
+        working-directory: bim-navigation-demo
+        run: npm run build
+
+      - name: Assemble Pages artifact
+        shell: bash
+        run: |
+          rm -rf _site
+          mkdir -p _site/demo
+          cp -R site/. _site/
+          cp -R bim-navigation-demo/dist/. _site/demo/
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -35,7 +61,7 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
