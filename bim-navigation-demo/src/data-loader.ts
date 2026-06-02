@@ -705,12 +705,39 @@ function normalizeSimulation(
       }))
       .sort((left, right) => left.t - right.t)
 
+    const agentMeta = Object.fromEntries(
+      Object.entries(scenario.agentMeta ?? {}).map(([agentId, meta]) => [
+        agentId,
+        {
+          originNodeId: meta.originNodeId,
+          destinationNodeId: meta.destinationNodeId,
+          agentType: meta.agentType ?? 'normal',
+          spawnTime: typeof meta.spawnTime === 'number' ? meta.spawnTime : Number(meta.spawnTime ?? 0),
+        },
+      ]),
+    )
+
+    const replanEvents = (scenario.replanEvents ?? [])
+      .map((event) => ({
+        t: Number(event.t),
+        agentId: event.agentId,
+        newPathLength:
+          typeof event.newPathLength === 'number'
+            ? event.newPathLength
+            : event.newPathLength == null
+              ? undefined
+              : Number(event.newPathLength),
+      }))
+      .sort((left, right) => left.t - right.t)
+
     const derivedStep = frames.length > 1 ? frames[1].t - frames[0].t : scenario.timeline?.step ?? 1
 
     return {
       ...scenario,
       kind: scenario.kind ?? 'loaded',
       frames,
+      agentMeta,
+      replanEvents,
       timeline: {
         start: frames[0]?.t ?? scenario.timeline?.start ?? 0,
         end: frames[frames.length - 1]?.t ?? scenario.timeline?.end ?? 0,

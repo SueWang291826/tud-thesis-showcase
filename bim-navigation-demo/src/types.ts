@@ -166,6 +166,19 @@ export interface SimulationSummary {
   [key: string]: string | number | null
 }
 
+export interface SimulationAgentMeta {
+  originNodeId?: string
+  destinationNodeId?: string
+  agentType?: string
+  spawnTime?: number
+}
+
+export interface SimulationReplanEvent {
+  t: number
+  agentId: string
+  newPathLength?: number
+}
+
 export interface SimulationAgentPose {
   id: string
   x: number
@@ -185,6 +198,8 @@ export interface SimulationScenario {
   routingMode: string
   summary: SimulationSummary
   frames: SimulationFrame[]
+  agentMeta?: Record<string, SimulationAgentMeta>
+  replanEvents?: SimulationReplanEvent[]
   timeline: {
     start: number
     end: number

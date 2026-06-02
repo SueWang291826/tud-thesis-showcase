@@ -395,6 +395,76 @@ def read_summary(path: Path) -> dict[str, Any]:
         return {key: coerce_number(value) for key, value in row.items()}
 
 
+def read_agent_meta(path: Path) -> dict[str, dict[str, Any]]:
+    if not path.exists():
+        return {}
+
+    payload = read_json(path)
+    if not isinstance(payload, dict):
+        return {}
+
+    normalized: dict[str, dict[str, Any]] = {}
+    for agent_id, meta in payload.items():
+        if not isinstance(meta, dict):
+            continue
+
+        entry: dict[str, Any] = {
+            'agentType': str(meta.get('agent_type') or meta.get('agentType') or 'normal'),
+        }
+
+        origin = meta.get('origin')
+        destination = meta.get('dest') or meta.get('destination')
+        spawn_time = meta.get('spawn_time', meta.get('spawnTime'))
+
+        if origin:
+            entry['originNodeId'] = str(origin)
+        if destination:
+            entry['destinationNodeId'] = str(destination)
+        if spawn_time is not None:
+            entry['spawnTime'] = float(spawn_time)
+
+        normalized[str(agent_id)] = entry
+
+    return normalized
+
+
+def read_replan_events(path: Path | None) -> list[dict[str, Any]]:
+    if path is None or not path.exists():
+        return []
+
+    payload = read_json(path)
+    if not isinstance(payload, dict):
+        return []
+
+    events = payload.get('replan_events')
+    if not isinstance(events, list):
+        return []
+
+    normalized: list[dict[str, Any]] = []
+    for event in events:
+        if not isinstance(event, dict):
+            continue
+
+        agent_id = event.get('agent_id') or event.get('agentId')
+        timestamp = event.get('t')
+        if agent_id is None or timestamp is None:
+            continue
+
+        normalized_event: dict[str, Any] = {
+            't': float(timestamp),
+            'agentId': str(agent_id),
+        }
+
+        new_path_length = event.get('new_path_len', event.get('newPathLength'))
+        if new_path_length is not None:
+            normalized_event['newPathLength'] = int(new_path_length)
+
+        normalized.append(normalized_event)
+
+    normalized.sort(key=lambda event: (event['t'], event['agentId']))
+    return normalized
+
+
 def read_traj_frames(path: Path, frame_step: int) -> list[dict[str, Any]]:
     frames_by_t: dict[float, list[dict[str, Any]]] = defaultdict(list)
     with path.open('r', encoding='utf-8') as handle:
@@ -463,6 +533,8 @@ def fallback_simulation(routes: dict[str, Any]) -> dict[str, Any]:
                     'total_replans': None,
                 },
                 'frames': frames,
+                'agentMeta': {},
+                'replanEvents': [],
                 'timeline': {
                     'start': frames[0]['t'],
                     'end': frames[-1]['t'],
@@ -482,30 +554,55 @@ def load_simulation(
 ) -> dict[str, Any]:
     scenarios: list[dict[str, Any]] = []
     source_paths: list[str] = []
-    for scenario_dir in (step5_dir / 'dynamic', step5_dir / 'static'):
+
+    scenario_candidates = [
+        ('dynamic', [step5_dir / 'scenC_dynamic', step5_dir / 'dynamic']),
+        ('static', [step5_dir / 'scenB_static', step5_dir / 'static']),
+    ]
+
+    for fallback_label, candidates in scenario_candidates:
+        scenario_dir = next(
+            (
+                candidate
+                for candidate in candidates
+                if (candidate / 'summary.csv').exists() and (candidate / 'traj_agents.jsonl').exists()
+            ),
+            None,
+        )
+        if scenario_dir is None:
+            continue
+
         summary_path = scenario_dir / 'summary.csv'
         traj_path = scenario_dir / 'traj_agents.jsonl'
-        if not summary_path.exists() or not traj_path.exists():
-            continue
+        agent_meta_path = scenario_dir / 'agent_meta.json'
+        result_path = next(iter(sorted(scenario_dir.glob('result*.json'))), None)
 
         summary = read_summary(summary_path)
         frames = read_traj_frames(traj_path, frame_step)
         if not frames:
             continue
 
-        source_paths.extend(
-            [relative_path(summary_path, repo_root), relative_path(traj_path, repo_root)]
-        )
+        agent_meta = read_agent_meta(agent_meta_path)
+        replan_events = read_replan_events(result_path)
+
+        source_paths.extend([relative_path(summary_path, repo_root), relative_path(traj_path, repo_root)])
+        if agent_meta_path.exists():
+            source_paths.append(relative_path(agent_meta_path, repo_root))
+        if result_path is not None and result_path.exists():
+            source_paths.append(relative_path(result_path, repo_root))
+
         step = frames[1]['t'] - frames[0]['t'] if len(frames) > 1 else 1.0
-        scenario_id = str(summary.get('label') or scenario_dir.name)
+        scenario_id = fallback_label
         scenarios.append(
             {
                 'id': scenario_id,
-                'label': scenario_id.replace('_', ' ').title(),
+            'label': fallback_label.title(),
                 'kind': 'loaded',
                 'routingMode': str(summary.get('routing_mode', scenario_dir.name)),
                 'summary': summary,
                 'frames': frames,
+                'agentMeta': agent_meta,
+                'replanEvents': replan_events,
                 'timeline': {
                     'start': frames[0]['t'],
                     'end': frames[-1]['t'],

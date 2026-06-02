@@ -65,9 +65,90 @@ interface ScenarioDensityCell {
   density: number
 }
 
+interface SimulationPointSet {
+  geometry: THREE.BufferGeometry
+  positions: Float32Array
+  glow: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>
+  core: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>
+}
+
+const SIMULATION_SCENARIO_COLORS = {
+  static: {
+    normal: new THREE.Color('#34f5ff'),
+    elderly: new THREE.Color('#c8ff32'),
+  },
+  dynamic: {
+    normal: new THREE.Color('#ff9a1f'),
+    elderly: new THREE.Color('#ff4df8'),
+  },
+} as const
+
+const SIMULATION_POINT_SCALE = 2.8
+const SIMULATION_ELDERLY_SCALE = 3.8
+const SIMULATION_GLOW_SCALE = 2.1
+const REPLAN_MARKER_LIFETIME_FRAMES = 8
+const REPLAN_MARKER_HEIGHT = 4.1
+const REPLAN_PREVIEW_LEAD_SECONDS = 3
+
 function isStaticScenario(scenario: SimulationScenario): boolean {
   const signature = `${scenario.id} ${scenario.label} ${scenario.routingMode}`.toLowerCase()
   return signature.includes('static')
+}
+
+function normalizeSimulationAgentType(agentType?: string): 'normal' | 'elderly' {
+  return typeof agentType === 'string' && agentType.toLowerCase().includes('elder') ? 'elderly' : 'normal'
+}
+
+function sampleSimulationAgentColor(scenario: SimulationScenario, agentType?: string): THREE.Color {
+  const family = isStaticScenario(scenario) ? SIMULATION_SCENARIO_COLORS.static : SIMULATION_SCENARIO_COLORS.dynamic
+  return family[normalizeSimulationAgentType(agentType)]
+}
+
+function createReplanMarkerTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 180
+  canvas.height = 180
+  const context = canvas.getContext('2d')
+  if (!context) {
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.needsUpdate = true
+    return texture
+  }
+
+  context.clearRect(0, 0, canvas.width, canvas.height)
+  context.shadowColor = 'rgba(255, 94, 32, 0.55)'
+  context.shadowBlur = 18
+  context.fillStyle = '#ffe66d'
+  context.beginPath()
+  context.roundRect(42, 24, 96, 104, 30)
+  context.fill()
+  context.beginPath()
+  context.moveTo(90, 126)
+  context.lineTo(76, 154)
+  context.lineTo(106, 132)
+  context.closePath()
+  context.fill()
+  context.shadowBlur = 0
+  context.lineWidth = 10
+  context.strokeStyle = '#ff8c42'
+  context.beginPath()
+  context.roundRect(42, 24, 96, 104, 30)
+  context.stroke()
+  context.beginPath()
+  context.moveTo(90, 126)
+  context.lineTo(76, 154)
+  context.lineTo(106, 132)
+  context.closePath()
+  context.stroke()
+  context.fillStyle = '#0b1420'
+  context.font = '900 100px Segoe UI, sans-serif'
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.fillText('!', 90, 74)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.needsUpdate = true
+  return texture
 }
 
 function isPrimaryStorey(level: string): boolean {
@@ -416,8 +497,10 @@ export class DemoScene {
   private autoRotateEnabled = false
   private modelStoreyGroups: THREE.Group[] = []
   private currentScenario: SimulationScenario | null = null
-  private simulationPoints: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial> | null = null
-  private simulationPositions: Float32Array | null = null
+  private simulationPointSets: Partial<Record<'normal' | 'elderly', SimulationPointSet>> = {}
+  private simulationMarkerGroup: THREE.Group | null = null
+  private simulationReplanMaterial: THREE.SpriteMaterial | null = null
+  private simulationReplanEventsByFrame = new Map<number, Set<string>>()
   private playing = false
   private playbackStartMs = 0
   private playbackStartTime = 0
@@ -566,31 +649,53 @@ export class DemoScene {
     this.status.simulationMode = scenario.kind
     this.layers.simulation.clear()
     this.layers.evaluation.clear()
-    this.simulationPoints = null
-    this.simulationPositions = null
+    this.simulationPointSets = {}
+    this.simulationMarkerGroup = null
+    this.simulationReplanEventsByFrame = this.indexReplanEvents(scenario)
     this.playing = false
 
-    const maxAgents = scenario.frames.reduce((max, frame) => Math.max(max, frame.agents.length), 0)
-    if (maxAgents === 0) {
+    const maxAgents = scenario.frames.reduce(
+      (result, frame) => {
+        const counts = { normal: 0, elderly: 0 }
+        for (const agent of frame.agents) {
+          counts[normalizeSimulationAgentType(scenario.agentMeta?.[agent.id]?.agentType)] += 1
+        }
+
+        return {
+          normal: Math.max(result.normal, counts.normal),
+          elderly: Math.max(result.elderly, counts.elderly),
+        }
+      },
+      { normal: 0, elderly: 0 },
+    )
+    if (maxAgents.normal === 0 && maxAgents.elderly === 0) {
       return
     }
 
-    const geometry = new THREE.BufferGeometry()
-    this.simulationPositions = new Float32Array(maxAgents * 3)
-    geometry.setAttribute('position', new THREE.BufferAttribute(this.simulationPositions, 3))
-    geometry.setDrawRange(0, maxAgents)
+    const normalSet = this.createSimulationPointSet(
+      sampleSimulationAgentColor(scenario, 'normal'),
+      this.config.visuals.simulationPointSize * SIMULATION_POINT_SCALE,
+      maxAgents.normal,
+      23,
+    )
+    const elderlySet = this.createSimulationPointSet(
+      sampleSimulationAgentColor(scenario, 'elderly'),
+      this.config.visuals.simulationPointSize * SIMULATION_ELDERLY_SCALE,
+      maxAgents.elderly,
+      25,
+    )
 
-    const material = new THREE.PointsMaterial({
-      color: colorFromHex(this.config.visuals.simulation),
-      size: this.config.visuals.simulationPointSize,
-      sizeAttenuation: true,
-      transparent: true,
-      opacity: 0.95,
-    })
-    rememberOpacity(material)
+    if (normalSet) {
+      this.simulationPointSets.normal = normalSet
+      this.layers.simulation.add(normalSet.glow, normalSet.core)
+    }
+    if (elderlySet) {
+      this.simulationPointSets.elderly = elderlySet
+      this.layers.simulation.add(elderlySet.glow, elderlySet.core)
+    }
 
-    this.simulationPoints = new THREE.Points(geometry, material)
-    this.layers.simulation.add(this.simulationPoints)
+    this.simulationMarkerGroup = new THREE.Group()
+    this.layers.simulation.add(this.simulationMarkerGroup)
     this.renderSimulationFrame(0)
     this.buildEvaluationLayer(scenario)
   }
@@ -602,8 +707,10 @@ export class DemoScene {
 
     this.playing = !this.playing
     if (this.playing) {
+      const playbackStartTime = this.preferredPlaybackStartTime(this.currentScenario)
       this.playbackStartMs = performance.now()
-      this.playbackStartTime = this.currentScenario.timeline.start
+      this.playbackStartTime = playbackStartTime
+      this.renderSimulationFrame(playbackStartTime)
     }
     return this.playing
   }
@@ -1517,11 +1624,9 @@ export class DemoScene {
   }
 
   private renderSimulationFrame(elapsedSeconds: number): void {
-    if (!this.currentScenario || !this.simulationPoints || !this.simulationPositions) {
+    if (!this.currentScenario) {
       return
     }
-
-    const positions = this.simulationPositions
 
     const frames = this.currentScenario.frames
     if (frames.length === 0) {
@@ -1538,17 +1643,166 @@ export class DemoScene {
       Math.floor((clampedTime - this.currentScenario.timeline.start) / step),
     )
     const frame = frames[frameIndex]
+    const recentReplanAgents = this.collectRecentReplanAgents(frameIndex)
 
-    this.simulationPoints.geometry.setDrawRange(0, frame.agents.length)
-    frame.agents.forEach((agent, index) => {
+    const drawCounts = { normal: 0, elderly: 0 }
+    frame.agents.forEach((agent) => {
+      const type = normalizeSimulationAgentType(this.currentScenario?.agentMeta?.[agent.id]?.agentType)
+      const set = this.simulationPointSets[type]
+      if (!set) {
+        return
+      }
+
+      const pointIndex = drawCounts[type]
+      drawCounts[type] += 1
       const point = toSceneVector(agent)
-      positions[index * 3] = point.x
-      positions[index * 3 + 1] = point.y
-      positions[index * 3 + 2] = point.z
+      set.positions[pointIndex * 3] = point.x
+      set.positions[pointIndex * 3 + 1] = point.y
+      set.positions[pointIndex * 3 + 2] = point.z
     })
 
-    const attribute = this.simulationPoints.geometry.getAttribute('position') as THREE.BufferAttribute
-    attribute.needsUpdate = true
+    ;(['normal', 'elderly'] as const).forEach((type) => {
+      const set = this.simulationPointSets[type]
+      if (!set) {
+        return
+      }
+
+      set.geometry.setDrawRange(0, drawCounts[type])
+      const positionAttribute = set.geometry.getAttribute('position') as THREE.BufferAttribute
+      positionAttribute.needsUpdate = true
+    })
+
+    this.updateSimulationMarkers(frame, clampedTime, recentReplanAgents)
+  }
+
+  private createSimulationPointSet(
+    color: THREE.Color,
+    size: number,
+    maxCount: number,
+    renderOrder: number,
+  ): SimulationPointSet | null {
+    if (maxCount <= 0) {
+      return null
+    }
+
+    const positions = new Float32Array(maxCount * 3)
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geometry.setDrawRange(0, maxCount)
+
+    const glowMaterial = new THREE.PointsMaterial({
+      color,
+      size: size * SIMULATION_GLOW_SCALE,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.24,
+      blending: THREE.AdditiveBlending,
+    })
+    rememberOpacity(glowMaterial)
+    liftOverlayMaterial(glowMaterial)
+    const glow = new THREE.Points(geometry, glowMaterial)
+    glow.renderOrder = renderOrder
+
+    const coreMaterial = new THREE.PointsMaterial({
+      color,
+      size,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.98,
+    })
+    rememberOpacity(coreMaterial)
+    liftOverlayMaterial(coreMaterial)
+    const core = new THREE.Points(geometry, coreMaterial)
+    core.renderOrder = renderOrder + 1
+
+    return { geometry, positions, glow, core }
+  }
+
+  private preferredPlaybackStartTime(scenario: SimulationScenario): number {
+    const firstReplanTime = scenario.replanEvents?.[0]?.t
+    if (typeof firstReplanTime !== 'number' || !Number.isFinite(firstReplanTime)) {
+      return scenario.timeline.start
+    }
+
+    return Math.max(scenario.timeline.start, firstReplanTime - REPLAN_PREVIEW_LEAD_SECONDS)
+  }
+
+  private indexReplanEvents(scenario: SimulationScenario): Map<number, Set<string>> {
+    const indexed = new Map<number, Set<string>>()
+    const step = Math.max(scenario.timeline.step, 0.0001)
+
+    for (const event of scenario.replanEvents ?? []) {
+      const frameIndex = Math.max(0, Math.round((event.t - scenario.timeline.start) / step))
+      const frameEvents = indexed.get(frameIndex) ?? new Set<string>()
+      frameEvents.add(event.agentId)
+      indexed.set(frameIndex, frameEvents)
+    }
+
+    return indexed
+  }
+
+  private collectRecentReplanAgents(frameIndex: number): Set<string> {
+    const recent = new Set<string>()
+    for (let offset = 0; offset <= REPLAN_MARKER_LIFETIME_FRAMES; offset += 1) {
+      const eventAgents = this.simulationReplanEventsByFrame.get(frameIndex - offset)
+      if (!eventAgents) {
+        continue
+      }
+
+      for (const agentId of eventAgents) {
+        recent.add(agentId)
+      }
+    }
+
+    return recent
+  }
+
+  private ensureSimulationReplanMaterial(): THREE.SpriteMaterial {
+    if (this.simulationReplanMaterial) {
+      return this.simulationReplanMaterial
+    }
+
+    const material = new THREE.SpriteMaterial({
+      map: createReplanMarkerTexture(),
+      transparent: true,
+      opacity: 0.97,
+    })
+    rememberOpacity(material)
+    liftOverlayMaterial(material)
+    this.simulationReplanMaterial = material
+    return material
+  }
+
+  private updateSimulationMarkers(
+    frame: { agents: Array<{ id: string; x: number; y: number; z: number }> },
+    currentTime: number,
+    recentReplanAgents: Set<string>,
+  ): void {
+    if (!this.simulationMarkerGroup) {
+      return
+    }
+
+    this.simulationMarkerGroup.clear()
+    if (recentReplanAgents.size === 0) {
+      return
+    }
+
+    const material = this.ensureSimulationReplanMaterial()
+    const pulse = 1 + Math.sin(currentTime * 9) * 0.14
+    const bob = Math.sin(currentTime * 7) * 0.22
+
+    for (const agent of frame.agents) {
+      if (!recentReplanAgents.has(agent.id)) {
+        continue
+      }
+
+      const sprite = new THREE.Sprite(material)
+      const point = toSceneVector(agent)
+      sprite.position.set(point.x, point.y + REPLAN_MARKER_HEIGHT + bob, point.z)
+      sprite.scale.set(5.2 * pulse, 5.2 * pulse, 1)
+      sprite.renderOrder = 28
+      this.simulationMarkerGroup.add(sprite)
+    }
   }
 
   private updateCameraTween(now: number): void {

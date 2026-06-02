@@ -486,6 +486,20 @@ function formatDeltaMetric(
 }
 
 function buildLegend(stageId: StageDefinition['id']): { title: string; items: Array<{ swatch: string; label: string }> } {
+  if (stageId === 5) {
+    return {
+      title: 'Simulation cues',
+      items: [
+        { swatch: 'swatch-sim-static-normal', label: 'Static scenario - normal agents' },
+        { swatch: 'swatch-sim-static-elderly', label: 'Static scenario - elderly agents' },
+        { swatch: 'swatch-sim-dynamic-normal', label: 'Dynamic scenario - normal agents' },
+        { swatch: 'swatch-sim-dynamic-elderly', label: 'Dynamic scenario - elderly agents' },
+        { swatch: 'swatch-replan', label: 'Replanning trigger marker' },
+        { swatch: 'swatch-route', label: 'Reference route' },
+      ],
+    }
+  }
+
   if (stageId === 6) {
     return {
       title: 'Evaluation cues',
