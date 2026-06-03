@@ -51,8 +51,8 @@ const STAGES: StageDefinition[] = [
     id: 6,
     label: 'Stage 6',
     title: 'Congestion-aware Replanning and Evaluation',
-    description: 'Compare the congestion-aware scenario against the static baseline: cool tiles mark reduced pressure, warm tiles mark rerouted or higher pressure zones, and the cards report the outcome deltas.',
-    footnote: 'This stage is a comparison view rather than another playback view. It visualizes where replanning relieves queues and where new pressure is introduced.',
+    description: 'Compare the congestion-aware run against the static baseline through a thesis-style evaluation matrix, so travel, waiting, queue, and replanning trade-offs can be read directly.',
+    footnote: 'This stage is a KPI comparison view rather than another spatial playback. The matrix is the primary evaluation surface and the scene stays as subdued background context.',
   },
 ]
 
@@ -97,7 +97,7 @@ const STAGE_METHODS: Record<StageDefinition['id'], StageMethodSummary> = {
   6: {
     step: 'Replanning and Evaluation',
     input: 'Congestion signals, route alternatives, and simulation metrics',
-    operation: 'Trigger dynamic rerouting and compare travel, waiting, queue, and replanning outcomes',
+    operation: 'Trigger dynamic rerouting and summarize the resulting KPI trade-offs in a comparison matrix',
     output: 'Congestion-aware evaluation',
   },
 }
@@ -111,6 +111,7 @@ interface References {
   stageProgress: HTMLElement
   methodStep: HTMLElement
   methodGrid: HTMLElement
+  stageSpotlight: HTMLElement
   stageOverlayLabel: HTMLElement
   stageOverlayTitle: HTMLElement
   stageOverlayDescription: HTMLElement
@@ -127,6 +128,10 @@ interface References {
   legendPanel: HTMLElement
   legendTitle: HTMLElement
   legendGrid: HTMLElement
+  evaluationMatrixPanel: HTMLElement
+  evaluationMatrixTitle: HTMLElement
+  evaluationMatrixSummary: HTMLElement
+  evaluationMatrixGrid: HTMLElement
   pointCloudNote: HTMLElement
   prevButton: HTMLButtonElement
   nextButton: HTMLButtonElement
@@ -259,6 +264,15 @@ function buildShell(): string {
             </div>
           </div>
 
+          <div class="viewport-overlay evaluation-matrix-panel hidden" data-evaluation-matrix-panel>
+            <div class="evaluation-matrix-head">
+              <p class="eyebrow">Evaluation matrix</p>
+              <h2 data-evaluation-matrix-title></h2>
+              <p data-evaluation-matrix-summary></p>
+            </div>
+            <div data-evaluation-matrix-grid></div>
+          </div>
+
           <div class="viewport-overlay note-panel hidden" data-point-cloud-note>
             <p class="eyebrow">Point-cloud disclaimer</p>
             <p>${EXACT_POINT_CLOUD_DISCLAIMER}</p>
@@ -324,6 +338,7 @@ function collectReferences(root: HTMLElement): References {
     stageProgress: root.querySelector<HTMLElement>('[data-stage-progress]')!,
     methodStep: root.querySelector<HTMLElement>('[data-method-step]')!,
     methodGrid: root.querySelector<HTMLElement>('[data-method-grid]')!,
+    stageSpotlight: root.querySelector<HTMLElement>('.stage-spotlight')!,
     stageOverlayLabel: root.querySelector<HTMLElement>('[data-stage-overlay-label]')!,
     stageOverlayTitle: root.querySelector<HTMLElement>('[data-stage-overlay-title]')!,
     stageOverlayDescription: root.querySelector<HTMLElement>('[data-stage-overlay-description]')!,
@@ -340,6 +355,10 @@ function collectReferences(root: HTMLElement): References {
     legendPanel: root.querySelector<HTMLElement>('[data-legend]')!,
     legendTitle: root.querySelector<HTMLElement>('[data-legend-title]')!,
     legendGrid: root.querySelector<HTMLElement>('[data-legend-grid]')!,
+    evaluationMatrixPanel: root.querySelector<HTMLElement>('[data-evaluation-matrix-panel]')!,
+    evaluationMatrixTitle: root.querySelector<HTMLElement>('[data-evaluation-matrix-title]')!,
+    evaluationMatrixSummary: root.querySelector<HTMLElement>('[data-evaluation-matrix-summary]')!,
+    evaluationMatrixGrid: root.querySelector<HTMLElement>('[data-evaluation-matrix-grid]')!,
     pointCloudNote: root.querySelector<HTMLElement>('[data-point-cloud-note]')!,
     prevButton: root.querySelector<HTMLButtonElement>('[data-prev]')!,
     nextButton: root.querySelector<HTMLButtonElement>('[data-next]')!,
@@ -502,14 +521,13 @@ function buildLegend(stageId: StageDefinition['id']): { title: string; items: Ar
 
   if (stageId === 6) {
     return {
-      title: 'Evaluation cues',
+      title: 'Evaluation matrix cues',
       items: [
-        { swatch: 'swatch-eval-relief', label: 'Reduced crowding vs static baseline' },
-        { swatch: 'swatch-eval-pressure', label: 'Higher pressure or rerouted load' },
-        { swatch: 'swatch-route', label: 'Reference route' },
-        { swatch: 'swatch-graph', label: 'Graph backbone' },
-        { swatch: 'swatch-sim', label: 'Current scenario agents' },
-        { swatch: 'swatch-vertical', label: 'Vertical transfer zones' },
+        { swatch: 'swatch-eval-static', label: 'Static baseline column' },
+        { swatch: 'swatch-eval-dynamic', label: 'Dynamic replanning column' },
+        { swatch: 'swatch-eval-better', label: 'Improvement vs static' },
+        { swatch: 'swatch-eval-worse', label: 'Trade-off or regression' },
+        { swatch: 'swatch-eval-adaptive', label: 'Adaptive replan activity' },
       ],
     }
   }
@@ -526,6 +544,218 @@ function buildLegend(stageId: StageDefinition['id']): { title: string; items: Ar
       { swatch: 'swatch-sim', label: 'Simulation agents' },
     ],
   }
+}
+
+type EvaluationMatrixDirection = 'lower' | 'higher' | 'neutral'
+type EvaluationMatrixTone = 'better' | 'worse' | 'neutral'
+
+interface EvaluationMatrixRow {
+  label: string
+  hint: string
+  baseline: number | null
+  evaluated: number | null
+  suffix: string
+  decimals: number
+  direction: EvaluationMatrixDirection
+}
+
+interface EvaluationMatrixModel {
+  title: string
+  summary: string
+  baselineLabel: string
+  evaluatedLabel: string
+  rows: EvaluationMatrixRow[]
+}
+
+function formatEvaluationMatrixValue(value: number | null, suffix: string, decimals: number): string {
+  if (value === null) {
+    return 'N/A'
+  }
+
+  const body = decimals === 0 ? Math.round(value).toString() : value.toFixed(decimals)
+  return `${body}${suffix}`
+}
+
+function formatEvaluationMatrixDelta(value: number | null, suffix: string, decimals: number): string {
+  if (value === null) {
+    return 'N/A'
+  }
+
+  const sign = value > 0 ? '+' : ''
+  const body = decimals === 0 ? Math.round(value).toString() : value.toFixed(decimals)
+  return `${sign}${body}${suffix}`
+}
+
+function describeEvaluationMatrixTone(
+  row: EvaluationMatrixRow,
+): { tone: EvaluationMatrixTone; detail: string; delta: number | null } {
+  if (row.baseline === null || row.evaluated === null) {
+    return { tone: 'neutral', detail: 'insufficient data', delta: null }
+  }
+
+  const delta = row.evaluated - row.baseline
+  if (row.direction === 'neutral') {
+    return {
+      tone: 'neutral',
+      detail: row.evaluated > 0 ? 'adaptive reroutes triggered' : 'no adaptive reroutes',
+      delta,
+    }
+  }
+
+  if (Math.abs(delta) < 1e-6) {
+    return { tone: 'neutral', detail: 'no material change', delta }
+  }
+
+  const improved = row.direction === 'lower' ? delta < 0 : delta > 0
+  return {
+    tone: improved ? 'better' : 'worse',
+    detail: improved ? 'improves vs static' : 'worsens vs static',
+    delta,
+  }
+}
+
+function summarizeEvaluationMatrix(model: EvaluationMatrixModel): string {
+  const comparableRows = model.rows
+    .map((row) => ({ row, reading: describeEvaluationMatrixTone(row) }))
+    .filter((entry) => entry.reading.delta !== null && entry.row.direction !== 'neutral')
+
+  const bestGain = comparableRows
+    .filter((entry) => entry.reading.tone === 'better')
+    .sort((left, right) => Math.abs(right.reading.delta ?? 0) - Math.abs(left.reading.delta ?? 0))[0]
+  const mainTradeoff = comparableRows
+    .filter((entry) => entry.reading.tone === 'worse')
+    .sort((left, right) => Math.abs(right.reading.delta ?? 0) - Math.abs(left.reading.delta ?? 0))[0]
+  const replanRow = model.rows.find((row) => row.direction === 'neutral')
+
+  const fragments: string[] = []
+  if (bestGain?.reading.delta !== null) {
+    fragments.push(
+      `${bestGain.row.label} ${formatEvaluationMatrixDelta(bestGain.reading.delta, bestGain.row.suffix, bestGain.row.decimals)}.`,
+    )
+  }
+  if (mainTradeoff?.reading.delta !== null) {
+    fragments.push(
+      `${mainTradeoff.row.label} ${formatEvaluationMatrixDelta(mainTradeoff.reading.delta, mainTradeoff.row.suffix, mainTradeoff.row.decimals)}.`,
+    )
+  }
+  if (replanRow && replanRow.evaluated !== null) {
+    fragments.push(`Dynamic replanning triggered ${formatEvaluationMatrixValue(replanRow.evaluated, replanRow.suffix, replanRow.decimals)}.`)
+  }
+
+  return fragments.join(' ') || 'Compare the baseline and dynamic scenario directly across the key thesis KPIs.'
+}
+
+function buildEvaluationMatrix(
+  simulation: SimulationData,
+  currentScenario: SimulationScenario | undefined,
+): EvaluationMatrixModel | null {
+  const evaluationPair = resolveEvaluationPair(simulation, currentScenario)
+  if (!evaluationPair) {
+    return null
+  }
+
+  const rows: EvaluationMatrixRow[] = [
+    {
+      label: 'Mean travel time',
+      hint: 'Lower is better',
+      baseline: metricNumber(evaluationPair.baseline.summary.mean_travel_time),
+      evaluated: metricNumber(evaluationPair.evaluated.summary.mean_travel_time),
+      suffix: ' s',
+      decimals: 1,
+      direction: 'lower',
+    },
+    {
+      label: 'Mean wait time',
+      hint: 'Lower is better',
+      baseline: metricNumber(evaluationPair.baseline.summary.mean_wait_time),
+      evaluated: metricNumber(evaluationPair.evaluated.summary.mean_wait_time),
+      suffix: ' s',
+      decimals: 1,
+      direction: 'lower',
+    },
+    {
+      label: 'Max queue',
+      hint: 'Lower is better',
+      baseline: metricNumber(evaluationPair.baseline.summary.max_queue),
+      evaluated: metricNumber(evaluationPair.evaluated.summary.max_queue),
+      suffix: '',
+      decimals: 0,
+      direction: 'lower',
+    },
+    {
+      label: 'Adaptive replans',
+      hint: 'Activity indicator',
+      baseline: metricNumber(evaluationPair.baseline.summary.total_replans),
+      evaluated: metricNumber(evaluationPair.evaluated.summary.total_replans),
+      suffix: '',
+      decimals: 0,
+      direction: 'neutral',
+    },
+  ]
+
+  const model: EvaluationMatrixModel = {
+    title: `${evaluationPair.evaluated.label} vs ${evaluationPair.baseline.label}`,
+    summary: '',
+    baselineLabel: evaluationPair.baseline.label,
+    evaluatedLabel: evaluationPair.evaluated.label,
+    rows,
+  }
+  model.summary = summarizeEvaluationMatrix(model)
+  return model
+}
+
+function renderEvaluationMatrix(model: EvaluationMatrixModel): string {
+  const chipRow = `
+    <div class="evaluation-chip-row">
+      <span class="evaluation-chip evaluation-chip-static">${model.baselineLabel}</span>
+      <span class="evaluation-chip evaluation-chip-dynamic">${model.evaluatedLabel}</span>
+      <span class="evaluation-chip evaluation-chip-better">Improvement</span>
+      <span class="evaluation-chip evaluation-chip-worse">Trade-off</span>
+      <span class="evaluation-chip evaluation-chip-neutral">Adaptive activity</span>
+    </div>
+  `
+
+  const header = `
+    <div class="evaluation-matrix-table">
+      <div class="evaluation-matrix-cell evaluation-matrix-header">Metric</div>
+      <div class="evaluation-matrix-cell evaluation-matrix-header">${model.baselineLabel}</div>
+      <div class="evaluation-matrix-cell evaluation-matrix-header">${model.evaluatedLabel}</div>
+      <div class="evaluation-matrix-cell evaluation-matrix-header">Reading</div>
+  `
+
+  const rows = model.rows
+    .map((row) => {
+      const reading = describeEvaluationMatrixTone(row)
+      const maxValue = Math.max(row.baseline ?? 0, row.evaluated ?? 0, 0.0001)
+      const baselineWidth = row.baseline === null ? 0 : Math.max(10, (row.baseline / maxValue) * 100)
+      const evaluatedWidth = row.evaluated === null ? 0 : Math.max(10, (row.evaluated / maxValue) * 100)
+      const readingText =
+        row.direction === 'neutral'
+          ? formatEvaluationMatrixValue(row.evaluated, row.suffix, row.decimals)
+          : formatEvaluationMatrixDelta(reading.delta, row.suffix, row.decimals)
+
+      return `
+        <div class="evaluation-matrix-cell evaluation-matrix-metric">
+          <strong>${row.label}</strong>
+          <span>${row.hint}</span>
+        </div>
+        <div class="evaluation-matrix-cell evaluation-matrix-scenario">
+          <span class="evaluation-matrix-value">${formatEvaluationMatrixValue(row.baseline, row.suffix, row.decimals)}</span>
+          <span class="evaluation-matrix-track"><span class="evaluation-matrix-fill evaluation-matrix-fill-static" style="width:${baselineWidth}%"></span></span>
+        </div>
+        <div class="evaluation-matrix-cell evaluation-matrix-scenario">
+          <span class="evaluation-matrix-value">${formatEvaluationMatrixValue(row.evaluated, row.suffix, row.decimals)}</span>
+          <span class="evaluation-matrix-track"><span class="evaluation-matrix-fill evaluation-matrix-fill-dynamic" style="width:${evaluatedWidth}%"></span></span>
+        </div>
+        <div class="evaluation-matrix-cell evaluation-matrix-reading evaluation-matrix-reading-${reading.tone}">
+          <strong>${readingText}</strong>
+          <span>${reading.detail}</span>
+        </div>
+      `
+    })
+    .join('')
+
+  return `${chipRow}${header}${rows}</div>`
 }
 
 function getStageMetrics(
@@ -677,13 +907,19 @@ export async function bootstrapDemo(root: HTMLDivElement): Promise<void> {
       refs.stageOverlayTitle.textContent = stage.title
       refs.stageOverlayDescription.textContent = stage.description
       refs.stageOverlayProgress.textContent = `${currentStageIndex + 1} / ${STAGES.length}`
+      refs.stageSpotlight.classList.toggle('hidden', stage.id === 6)
       refs.pointCloudNote.classList.toggle('hidden', true)
+      const evaluationMatrix = stage.id === 6 ? buildEvaluationMatrix(bundle.simulation, currentScenario) : null
       const legend = buildLegend(stage.id)
       refs.legendTitle.textContent = legend.title
       refs.legendGrid.innerHTML = legend.items
         .map((item) => `<div><span class="swatch ${item.swatch}"></span>${item.label}</div>`)
         .join('')
-      refs.legendPanel.classList.toggle('hidden', stage.id < 4)
+      refs.legendPanel.classList.toggle('hidden', stage.id < 4 || stage.id === 6)
+      refs.evaluationMatrixPanel.classList.toggle('hidden', !evaluationMatrix)
+      refs.evaluationMatrixTitle.textContent = evaluationMatrix?.title ?? ''
+      refs.evaluationMatrixSummary.textContent = evaluationMatrix?.summary ?? ''
+      refs.evaluationMatrixGrid.innerHTML = evaluationMatrix ? renderEvaluationMatrix(evaluationMatrix) : ''
       refs.routeWrap.classList.toggle('hidden', stage.id !== 5)
       refs.scenarioWrap.classList.toggle('hidden', stage.id !== 5)
       refs.metrics.innerHTML = getStageMetrics(

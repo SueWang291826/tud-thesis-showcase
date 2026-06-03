@@ -57,14 +57,6 @@ interface TileFieldOptions {
   palette: 'pointCloud' | 'movement'
 }
 
-interface ScenarioDensityCell {
-  sumX: number
-  sumY: number
-  sumZ: number
-  samples: number
-  density: number
-}
-
 interface SimulationPointCloud {
   geometry: THREE.BufferGeometry
   positions: Float32Array
@@ -1196,158 +1188,8 @@ export class DemoScene {
     return mesh
   }
 
-  private buildEvaluationLayer(scenario: SimulationScenario): void {
+  private buildEvaluationLayer(_scenario: SimulationScenario): void {
     this.layers.evaluation.clear()
-
-    const comparison = this.resolveEvaluationScenarios(scenario)
-    if (!comparison) {
-      return
-    }
-
-    const deltaField = this.createEvaluationDeltaField(comparison.evaluated, comparison.baseline)
-    if (deltaField) {
-      this.layers.evaluation.add(deltaField)
-    }
-  }
-
-  private resolveEvaluationScenarios(
-    scenario: SimulationScenario,
-  ): { baseline: SimulationScenario; evaluated: SimulationScenario } | null {
-    if (!this.bundle) {
-      return null
-    }
-
-    const baseline = this.bundle.simulation.scenarios.find((candidate) => isStaticScenario(candidate))
-    if (!baseline) {
-      return null
-    }
-
-    const evaluated = !isStaticScenario(scenario)
-      ? scenario
-      : this.bundle.simulation.scenarios.find((candidate) => !isStaticScenario(candidate) && candidate.frames.length > 0)
-
-    if (!evaluated || evaluated.id === baseline.id) {
-      return null
-    }
-
-    return { baseline, evaluated }
-  }
-
-  private collectScenarioDensity(scenario: SimulationScenario, cellSize: number): Map<string, ScenarioDensityCell> {
-    const cells = new Map<string, ScenarioDensityCell>()
-    const frameStep =
-      scenario.frames.length > 1400 ? 6 : scenario.frames.length > 700 ? 4 : scenario.frames.length > 280 ? 2 : 1
-    let sampledFrameCount = 0
-
-    for (let frameIndex = 0; frameIndex < scenario.frames.length; frameIndex += frameStep) {
-      const frame = scenario.frames[frameIndex]
-      sampledFrameCount += 1
-
-      for (const agent of frame.agents) {
-        const gridX = Math.round(agent.x / cellSize)
-        const gridY = Math.round(agent.y / cellSize)
-        const gridZ = Math.round(agent.z / 3)
-        const key = `${gridZ}:${gridX}:${gridY}`
-        const cell = cells.get(key) ?? { sumX: 0, sumY: 0, sumZ: 0, samples: 0, density: 0 }
-        cell.sumX += agent.x
-        cell.sumY += agent.y
-        cell.sumZ += agent.z
-        cell.samples += 1
-        cell.density += 1
-        cells.set(key, cell)
-      }
-    }
-
-    const normalization = Math.max(sampledFrameCount, 1)
-    for (const cell of cells.values()) {
-      cell.density /= normalization
-    }
-
-    return cells
-  }
-
-  private createEvaluationDeltaField(
-    evaluated: SimulationScenario,
-    baseline: SimulationScenario,
-  ): THREE.InstancedMesh<THREE.BoxGeometry, THREE.MeshBasicMaterial> | null {
-    const cellSize = 3.2
-    const evaluatedCells = this.collectScenarioDensity(evaluated, cellSize)
-    const baselineCells = this.collectScenarioDensity(baseline, cellSize)
-    const keys = new Set([...evaluatedCells.keys(), ...baselineCells.keys()])
-    const entries: Array<{ x: number; y: number; z: number; delta: number }> = []
-    let maxAbsDelta = 0
-
-    for (const key of keys) {
-      const evaluatedCell = evaluatedCells.get(key)
-      const baselineCell = baselineCells.get(key)
-      const reference = evaluatedCell ?? baselineCell
-      if (!reference) {
-        continue
-      }
-
-      const delta = (evaluatedCell?.density ?? 0) - (baselineCell?.density ?? 0)
-      maxAbsDelta = Math.max(maxAbsDelta, Math.abs(delta))
-      entries.push({
-        x: reference.sumX / reference.samples,
-        y: reference.sumY / reference.samples,
-        z: reference.sumZ / reference.samples,
-        delta,
-      })
-    }
-
-    if (entries.length === 0 || maxAbsDelta <= 0.01) {
-      return null
-    }
-
-    const visibleEntries = entries.filter((entry) => Math.abs(entry.delta) >= Math.max(0.08, maxAbsDelta * 0.16))
-    if (visibleEntries.length === 0) {
-      return null
-    }
-
-    const geometry = new THREE.BoxGeometry(1, 1, 1)
-    const material = new THREE.MeshBasicMaterial({
-      color: '#ffffff',
-      transparent: true,
-      opacity: 0.92,
-    })
-    rememberOpacity(material)
-    liftOverlayMaterial(material)
-
-    const mesh = new THREE.InstancedMesh(geometry, material, visibleEntries.length)
-    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage)
-
-    const reliefLow = new THREE.Color('#8ecae6')
-    const reliefHigh = new THREE.Color('#2ec4b6')
-    const pressureLow = new THREE.Color('#ffd166')
-    const pressureHigh = new THREE.Color('#ff595e')
-    const matrix = new THREE.Matrix4()
-    const quaternion = new THREE.Quaternion()
-    const position = new THREE.Vector3()
-    const scale = new THREE.Vector3()
-
-    visibleEntries.forEach((entry, index) => {
-      const normalized = THREE.MathUtils.clamp(Math.abs(entry.delta) / maxAbsDelta, 0, 1)
-      const height = THREE.MathUtils.lerp(0.16, 1.35, normalized)
-      const color =
-        entry.delta < 0
-          ? reliefLow.clone().lerp(reliefHigh, normalized)
-          : pressureLow.clone().lerp(pressureHigh, normalized)
-
-      position.copy(toSceneVector({ x: entry.x, y: entry.y, z: entry.z }))
-      position.y += height * 0.5 + 0.08
-      scale.set(cellSize * 0.78, height, cellSize * 0.78)
-      matrix.compose(position, quaternion, scale)
-
-      mesh.setMatrixAt(index, matrix)
-      mesh.setColorAt(index, color)
-    })
-
-    mesh.instanceMatrix.needsUpdate = true
-    if (mesh.instanceColor) {
-      mesh.instanceColor.needsUpdate = true
-    }
-    mesh.renderOrder = 16
-    return mesh
   }
 
   private buildGraph(graph: NavigationGraphData): void {
@@ -1540,7 +1382,7 @@ export class DemoScene {
       3: { model: 0, context: 0.62, pointCloud: 0, movement: 1, graph: 0, route: 0, anchors: 0.2, evaluation: 0, simulation: 0 },
       4: { model: 0, context: 0.16, pointCloud: 0.16, movement: 0.12, graph: 1, route: 0, anchors: 0.32, evaluation: 0, simulation: 0 },
       5: { model: 0, context: 0.08, pointCloud: 0, movement: 0.08, graph: 0.48, route: 1, anchors: 0.18, evaluation: 0, simulation: 0.76 },
-      6: { model: 0, context: 0.02, pointCloud: 0, movement: 0.06, graph: 0.56, route: 0.42, anchors: 0.12, evaluation: 1, simulation: 0.26 },
+      6: { model: 0, context: 0.02, pointCloud: 0, movement: 0.04, graph: 0.34, route: 0.24, anchors: 0.08, evaluation: 0, simulation: 0.14 },
     }
 
     for (const [key, group] of Object.entries(this.layers) as Array<[keyof typeof this.layers, THREE.Group]>) {
